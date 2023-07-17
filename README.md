@@ -25,7 +25,7 @@ import  { configure, fetchPosts }  from  'fetch-wordpress-api';
 
 configure({  DOMAIN:  'https://example.com'  });
 
-const posts = await fetchPosts() // It will return an array posts
+const posts = await fetchPosts() // It will return an array of posts objects
 ```
 
 Each function in this module performs a fetch request to a specific WordPress API endpoint. They return a Promise that resolves with the fetched data as a JSON object or rejects with an Error if the fetch request fails.
