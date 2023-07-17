@@ -3,6 +3,8 @@ import type { Url } from 'url';
 export interface ConfigureOptions {
   DOMAIN: string;
 }
+export type PostsWithId = `${Endpoints.posts}/${number}`;
+export type PagesWithId = `${Endpoints.pages}/${number}`;
 
 // Enum declarations
 export enum PostFields {
@@ -30,10 +32,6 @@ export enum PostFields {
   title = 'title',
   type = 'type',
 }
-
-export type PostsWithId = `${Endpoints.posts}/${number}`;
-
-export type PagesWithId = `${Endpoints.pages}/${number}`;
 
 export enum CategoryFields {
   count = 'count',

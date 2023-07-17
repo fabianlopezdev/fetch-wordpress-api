@@ -1,14 +1,10 @@
 # Fetch WordPress API
 
-  
-
 This module provides a set of utility functions for interacting with a headless WordPress CMS via the WordPress REST API. It includes functions for fetching posts, pages, and categories, with support for custom fields and query parameters.
 
 Installation
 
 To install the package, run the following command:
-
-  
 
 ```
 npm install fetch-wordpress-api
@@ -16,16 +12,29 @@ npm install fetch-wordpress-api
 
 ## Usage
 
-Before using the package's functions, you need to configure the `DOMAIN` variable by calling the `configure` function and passing an object with the `DOMAIN` property set to the base URL of your WordPress site. 
+Before using the package's functions, you need to configure the `DOMAIN` variable by calling the `configure` function and passing an object with the `DOMAIN` property set to the base URL of your WordPress site.
 
 Here's an example of how to configure the `DOMAIN` and use the package's functions:
 
 ```typescript
-import  { configure, fetchPosts }  from  'fetch-wordpress-api'; 
+import { configure, fetchPosts, PostFields } from 'fetch-wordpress-api';
 
-configure({  DOMAIN:  'https://example.com'  });
+configure({ DOMAIN: 'https://example.com' });
 
-const posts = await fetchPosts() // It will return an array of posts objects
+// This will return an array of posts objects
+const posts = await fetchPosts();
+
+// Fetch only 5 posts
+const posts = await fetchPosts(5);
+
+// Fetch 3 posts containing only the title, content, and categories
+const postFields = [
+  PostFields.title,
+  PostFields.content,
+  PostFields.categories,
+]; // Remember to import the type PostFields at the beginning of your file
+
+const posts = await fetchPosts(3, postFields);
 ```
 
 Each function in this module performs a fetch request to a specific WordPress API endpoint. They return a Promise that resolves with the fetched data as a JSON object or rejects with an Error if the fetch request fails.
@@ -36,29 +45,187 @@ Please refer to the source code and TypeScript type definitions for detailed inf
 
 The package includes the following utility functions:
 
--   **`configure(options: ConfigureOptions)`:**  Configures the package with the provided options. `Important` to establish the connection with your  Wordpress domain. 
-- **`fetchData(endpoing?: Endpoints | PostWithId | PagesWithId, query?: URLSearchParams)`:** Core function that all the other utility functions use to fetch data. This function can be used to fetch data from any specified endpoint with any specified query parameters.
--   **`fetchPosts(quantity?: number, postFields?: PostFields[])`:** Fetches a specified number of posts with optional fields.
--   **`fetchPostsInCategory(categoryId: number, postFields?: PostFields[], quantity?: number)`:** Fetches posts in a specific category with optional fields and quantity.
--   **`fetchPostBySlug(slug: string, postFields?: PostFields[])`:** Fetches a post by its slug with optional fields.
--   **`fetchPostById(id: number, postFields?: PostFields[])`:** Fetches a post by its ID with optional fields.
--   **`fetchAllCategories(categoryFields?: CategoryFields[])`:** Fetches all categories with optional fields.
--   **`fetchPages(quantity?: number, pageFields?: PageFields[])`**: Fetches a specified number of pages with optional fields.
--   **`fetchPageBySlug(slug: string, pageFields?: PageFields[])`:** Fetches a page by its slug with optional fields.
--   **`fetchPageById(id: number, pageFields?: PageFields[])`:** Fetches a page by its ID with optional fields.
+- **`configure(options: ConfigureOptions)`:** This function sets up the package by using the provided options. It's crucial to use this function first in order to establish a connection with your Wordpress domain. For instance, `configure({domain: 'your-wordpress-domain'}).`
+
+- **`fetchData(endpoint?: Endpoints | PostWithId | PagesWithId, query?: URLSearchParams)`:** This is the main function that all other utility functions use to retrieve data.
+
+- **`fetchPosts(quantity?: number, postFields?: PostFields[])`:** Use this function to retrieve either all posts or a specified number of posts. You can also specify the fields you want returned for each post. For example, `fetchPosts(5, [Postfields.id, Postfields.title]).`
+
+- **`fetchPostsInCategory(categoryId: number, postFields?: PostFields[], quantity?: number)`:** This function retrieves posts from a specific category. You can also specify the fields you want for each post and limit the number of posts returned. Example usage: `fetchPostsInCategory(1, [Postfields.id, Postfields.title], 5).`
+
+- **`fetchPostBySlug(slug: string, postFields?: PostFields[])`:** Retrieve a post using its slug. You can specify the fields you want returned. For instance, `fetchPostBySlug('your/post-slug', [Postfields.id, Postfields.title]).`
+
+- **`fetchPostById(id: number, postFields?: PostFields[])`:** Use this to retrieve a post by its ID. You can specify the fields you want returned. Example usage: `fetchPostById(123, [Postfields.id, Postfields.title]).`
+
+- **`fetchAllCategories(categoryFields?: CategoryFields[])`:** Fetch all categories. You can specify the fields you want for each category. For example, `fetchAllCategories([CategoryFields.id, CategoryFields.name]).`
+
+- **`fetchPages(quantity?: number, pageFields?: PageFields[])`**: Use this function to fetch a specified number of pages. You can specify the fields you want returned for each page. For instance, `fetchPages(5, [Page.id, Page.title]).`
+
+- **`fetchPageBySlug(slug: string, pageFields?: PageFields[])`:** Retrieve a page using its slug. You can specify the fields you want returned. For instance, `fetchPageBySlug('page-slug', [Page.id, Page.title]).`
+
+- **`fetchPageById(id: number, pageFields?: PageFields[])`:** Use this function to retrieve a page by its ID. You can specify the fields you want returned. Example usage: `fetchPageById(123, [Page.id, Page.title]).`
 
 For more detailed information on the available functions and their parameters, please refer to the source code and TypeScript type definitions.
-  
+
 ## Importing Types
 
-In addition to importing the functions, you can also import the Typescript types from this package. This can be useful when working with the functions and their return values in a Typescript project. 
+In addition to importing the functions, you can also import the Typescript types from this package. This can be useful when working with the functions and their return values in a Typescript project.
 
 To import the types, simply include them in your import statement:
 
-```typescript 
-import { fetchPosts, Post, CategoryFields } from 'fetch-wordpress-api';
+```typescript
+import { fetchAllCategories, CategoryFields } from 'fetch-wordpress-api';
+
+// Fetch all categories containing only the title, content, and categories
+const categories = fetchAllCategories([CategoryFields.id, CategoryFields.title])
 ```
+
 By importing the types, you can benefit from TypeScript's type checking and autocompletion features when using this package.
+
+These are the types available to use in your application:
+
+```typescript
+type Post = {
+  author: number;
+  categories: number[];
+  comment_status: string;
+  content: { rendered: string };
+  date: string;
+  date_gmt: string | null | Date;
+  excerpt: { rendered: string };
+  featured_media: number;
+  format: string;
+  guid: string;
+  id: { rendered: string; raw: string };
+  link: string | Url;
+  meta: Record<string, string | number | boolean | any[] | Record<string, any>>;
+  modified: string | Date;
+  modified_gmt: string | Date;
+  ping_status: string;
+  slug: string;
+  status: string;
+  sticky: string;
+  tags: number[];
+  template: string;
+  title: { rendered: string };
+  type: string;
+};
+
+enum PostFields {
+  author = 'author',
+  categories = 'categories',
+  comment_status = 'comment_status',
+  content = 'content',
+  date = 'date',
+  date_gmt = 'date_gmt',
+  excerpt = 'excerpt',
+  featured_media = 'featured_media',
+  format = 'format',
+  guid = 'guid',
+  id = 'id',
+  link = 'link',
+  meta = 'meta',
+  modified = 'modified',
+  modified_gmt = 'modified_gmt',
+  ping_status = 'ping_status',
+  slug = 'slug',
+  status = 'status',
+  sticky = 'sticky',
+  tags = 'tags',
+  template = 'template',
+  title = 'title',
+  type = 'type',
+}
+
+type Category = {
+  count: number;
+  description: string;
+  id: number;
+  link: string;
+  meta: Record<string, string | number | boolean | any[] | Record<string, any>>;
+  name: string;
+  slug: string;
+  taxonomy: string;
+};
+
+enum CategoryFields {
+  count = 'count',
+  description = 'description',
+  id = 'id',
+  link = 'link',
+  meta = 'meta',
+  parent = 'parent',
+  name = 'name',
+  slug = 'slug',
+  taxonomy = 'taxonomy',
+}
+
+enum PageFields {
+  author = 'author',
+  comment_status = 'comment_status',
+  content = 'content',
+  date = 'date',
+  date_gmt = 'date_gmt',
+  excerpt = 'excerpt',
+  featured_media = 'featured_media',
+  generated_slug = 'generated_slug',
+  guid = 'guid',
+  id = 'id',
+  link = 'link',
+  menu_order = 'menu_order',
+  meta = 'meta',
+  modified = 'modified',
+  modified_gmt = 'modified_gmt',
+  password = 'password',
+  permalink_template = 'permalink_template',
+  ping_status = 'ping_status',
+  slug = 'slug',
+  status = 'status',
+  template = 'template',
+  title = 'title',
+  type = 'type',
+}
+
+type Page = {
+  author: number;
+  comment_status: 'open' | 'closed';
+  content: {
+    rendered: string;
+    raw?: string;
+    protected?: boolean;
+  };
+  date: string | null;
+  date_gmt: string | null;
+  excerpt: {
+    rendered: string;
+    raw?: string;
+    protected?: boolean;
+  };
+  featured_media: number;
+  generated_slug: string;
+  guid: {
+    rendered: string;
+  };
+  id: number;
+  link: string;
+  menu_order: number;
+  meta: Record<string, any>;
+  modified: string;
+  modified_gmt: string;
+  parent: number;
+  password: string;
+  permalink_template: string;
+  ping_status: 'open' | 'closed';
+  slug: string;
+  status: 'publish' | 'future' | 'draft' | 'pending' | 'private';
+  template: string;
+  title: {
+    rendered: string;
+    raw?: string;
+  };
+  type: 'page';
+};
+```
 
 ## Contributing
 
@@ -67,3 +234,4 @@ If you'd like to contribute to this project, please feel free to submit a pull r
 ## License
 
 This package is released under the MIT License.
+
