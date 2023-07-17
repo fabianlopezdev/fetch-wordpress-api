@@ -21,6 +21,10 @@
     "utility",
     "functions"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Fabs-and/fetch-wordpress-api"
+  },
   "author": "Fabian Lopez",
   "license": "MIT",
   "devDependencies": {
