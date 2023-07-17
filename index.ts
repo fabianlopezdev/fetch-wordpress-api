@@ -1,17 +1,22 @@
 // Making types available for import when package is installed
 export type {
   Category,
-  CategoryFields,
   ConfigureOptions,
-  Endpoints,
   GlobalParams,
   Page,
-  PageFields,
   PagesWithId,
   Post,
   PostParams,
   PostsWithId,
 } from './types';
+
+// These types are enums, they can be also used as values
+export {
+  CategoryFields,
+  Endpoints,
+  PageFields,
+  PostFields,
+} from './types'
 
 // Import Api helper functions
 
