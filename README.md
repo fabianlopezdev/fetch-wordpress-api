@@ -45,25 +45,63 @@ Please refer to the source code and TypeScript type definitions for detailed inf
 
 The package includes the following utility functions:
 
-- **`configure(options: ConfigureOptions)`:** This function sets up the package by using the provided options. It's crucial to use this function first in order to establish a connection with your Wordpress domain. For instance, `configure({domain: 'your-wordpress-domain'}).`
+- **`configure(options)`:** 
 
-- **`fetchData(endpoint?: Endpoints | PostWithId | PagesWithId, query?: URLSearchParams)`:** This is the main function that all other utility functions use to retrieve data.
+This function sets up the package by using the provided options. It's crucial to use this function first in order to establish a connection with your Wordpress domain. 
 
-- **`fetchPosts(quantity?: number, postFields?: PostFields[])`:** Use this function to retrieve either all posts or a specified number of posts. You can also specify the fields you want returned for each post. For example, `fetchPosts(5, [Postfields.id, Postfields.title]).`
+`configure({DOMAIN: 'your-wordpress-domain'}).`
 
-- **`fetchPostsInCategory(categoryId: number, postFields?: PostFields[], quantity?: number)`:** This function retrieves posts from a specific category. You can also specify the fields you want for each post and limit the number of posts returned. Example usage: `fetchPostsInCategory(1, [Postfields.id, Postfields.title], 5).`
+- **`fetchData(endpoint?, query?)`:** 
 
-- **`fetchPostBySlug(slug: string, postFields?: PostFields[])`:** Retrieve a post using its slug. You can specify the fields you want returned. For instance, `fetchPostBySlug('your/post-slug', [Postfields.id, Postfields.title]).`
+Main function that all other utility functions use to retrieve data.
 
-- **`fetchPostById(id: number, postFields?: PostFields[])`:** Use this to retrieve a post by its ID. You can specify the fields you want returned. Example usage: `fetchPostById(123, [Postfields.id, Postfields.title]).`
+- **`fetchPosts(quantity?, postFields?)`:**
 
-- **`fetchAllCategories(categoryFields?: CategoryFields[])`:** Fetch all categories. You can specify the fields you want for each category. For example, `fetchAllCategories([CategoryFields.id, CategoryFields.name]).`
+Retrieve either all posts or a specified number of posts. You can specify the fields you want returned for each post.
 
-- **`fetchPages(quantity?: number, pageFields?: PageFields[])`**: Use this function to fetch a specified number of pages. You can specify the fields you want returned for each page. For instance, `fetchPages(5, [Page.id, Page.title]).`
+`fetchPosts(5, [Postfields.id, Postfields.title]).`
 
-- **`fetchPageBySlug(slug: string, pageFields?: PageFields[])`:** Retrieve a page using its slug. You can specify the fields you want returned. For instance, `fetchPageBySlug('page-slug', [Page.id, Page.title]).`
+- **`fetchPostsInCategory(categoryId, postFields?, quantity?)`:** 
 
-- **`fetchPageById(id: number, pageFields?: PageFields[])`:** Use this function to retrieve a page by its ID. You can specify the fields you want returned. Example usage: `fetchPageById(123, [Page.id, Page.title]).`
+Retrieve posts from a specific category. You can specify the fields you want returned for each post and limit the number of posts. 
+
+`fetchPostsInCategory(1, [Postfields.id, Postfields.title], 5).`
+
+- **`fetchPostBySlug(slug, postFields?)`:** 
+
+Retrieve a post using its slug. You can specify the fields you want returned.
+
+`fetchPostBySlug('your/post-slug', [Postfields.id, Postfields.title]).`
+
+- **`fetchPostById(id, postFields?)`:** 
+
+Retrieve a post by its ID. You can specify the fields you want returned. 
+
+`fetchPostById(123, [Postfields.id, Postfields.title]).`
+
+- **`fetchAllCategories(categoryFields?)`:** 
+
+Retrieve all categories. You can specify the fields you want for each category. 
+
+`fetchAllCategories([CategoryFields.id, CategoryFields.name]).`
+
+- **`fetchPages(quantity?, pageFields?)`**: 
+
+Retrieve a specified number of pages. You can specify the fields you want returned for each page. 
+
+`fetchPages(5, [Page.id, PageFields.title]).`
+
+- **`fetchPageBySlug(slug, pageFields)`:** 
+
+Retrieve a page using its slug. You can specify the fields you want returned. 
+
+`fetchPageBySlug('page-slug', [PageFields.id, PageFields.title]).`
+
+- **`fetchPageById(id, pageFields)`:** 
+
+Retrieve a page by its ID. You can specify the fields you want returned. 
+
+`fetchPageById(123, [PageFields.id, PageFields.title]).`
 
 For more detailed information on the available functions and their parameters, please refer to the source code and TypeScript type definitions.
 

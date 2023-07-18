@@ -1,9 +1,9 @@
 {
   "name": "fetch-wordpress-api",
   "version": "1.0.1",
-  "description": "WordPress API Fetch Utils: A collection of utility functions designed to simplify fetching data from the WordPress REST API. This package provides easy-to-use abstractions for fetching posts, pages, and categories, as well as fetching posts by category, slug, or ID, and fetching pages by slug or ID. It also includes helper functions for detecting redirects, building endpoint parameters, and constructing query strings. Ideal for developers working with headless WordPress setups or integrating WordPress data into other applications.",
-  "main": "index.js",
-  "types": "index.ts",
+  "description": "Easy fetching from the Wordpress API",
+  "main": "dist/index.js",
+  "types": "dist/index.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -13,22 +13,28 @@
     "api",
     "fetch",
     "rest",
-    "posts",
-    "pages",
-    "categories",
-    "slug",
-    "id",
+    "typescript",
+    "javascript",
+    "api client",
+    "wpapi",
+    "wp-api",
+    "jason",
     "utility",
-    "functions"
+    "functions",
+    "fetch functions",
+    "ts",
+    "wp"
   ],
   "repository": {
     "type": "git",
     "url": "https://github.com/Fabs-and/fetch-wordpress-api"
   },
-  "author": "Fabian Lopez",
+  "author": "Fabian Lopez  <fabian@fabapps.dev> (https://fabapps.dev/)",
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.4.2",
     "typescript": "^5.1.6"
   }
 }
+
+

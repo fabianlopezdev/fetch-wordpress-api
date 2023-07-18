@@ -11,12 +11,7 @@ export type {
 } from './types';
 
 // These types are enums, they can be also used as values
-export {
-  CategoryFields,
-  Endpoints,
-  PageFields,
-  PostFields,
-} from './types'
+export { CategoryFields, Endpoints, PageFields, PostFields } from './types';
 
 // Import Api helper functions
 
