@@ -1,5 +1,13 @@
 # Fetch WordPress API
 
+[![npm version](https://badge.fury.io/js/fetch-wordpress-api.svg)](https://badge.fury.io/js/fetch-wordpress-api)
+ ![WordPress](https://img.shields.io/badge/WordPress-%23117AC9.svg?style=flat&logo=WordPress&logoColor=white)
+ ![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=flat&logo=typescript&logoColor=white)
+ ![JavaScript](https://img.shields.io/badge/javascript-%23323330.svg?style=flat&logo=javascript&logoColor=%23F7DF1E)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=Fabs-and_fetch-wordpress-api&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=Fabs-and_fetch-wordpress-api)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=Fabs-and_fetch-wordpress-api&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=Fabs-and_fetch-wordpress-api)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=Fabs-and_fetch-wordpress-api&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=Fabs-and_fetch-wordpress-api)
+
 This module provides a set of utility functions for interacting with a headless WordPress CMS via the WordPress REST API. It includes functions for fetching posts, pages, and categories, with support for custom fields and query parameters.
 
 Installation
