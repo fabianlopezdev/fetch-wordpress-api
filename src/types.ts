@@ -1,7 +1,7 @@
 import type { Url } from 'url';
 
 export interface ConfigureOptions {
-  DOMAIN: string;
+  BASE_URL: string;
 }
 export type PostsWithId = `${Endpoints.posts}/${number}`;
 export type PagesWithId = `${Endpoints.pages}/${number}`;

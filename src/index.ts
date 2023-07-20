@@ -36,10 +36,10 @@ import { Endpoints, PostFields } from './types';
 // Variables Declarations
 
 const WP_API = '/wp-json/wp/v2'; // This may change if Wordpress changes the Wordpress API
-let DOMAIN: string;
+let BASE_URL: string;
 
 export function configure(options: ConfigureOptions) {
-  DOMAIN = options.DOMAIN;
+  BASE_URL = options.BASE_URL;
 }
 
 // Functions Declarations
@@ -56,7 +56,7 @@ export async function fetchData(
   query?: URLSearchParams
 ) {
   try {
-    const url = new URL(`${DOMAIN}${WP_API}/${endpoint}`);
+    const url = new URL(`${BASE_URL}${WP_API}/${endpoint}`);
 
     if (query) url.search = query.toString();
 

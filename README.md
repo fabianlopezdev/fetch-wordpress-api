@@ -20,14 +20,14 @@ npm install fetch-wordpress-api
 
 ## Usage
 
-Before using the package's functions, you need to configure the `DOMAIN` variable by calling the `configure` function and passing an object with the `DOMAIN` property set to the base URL of your WordPress site.
+Before using the package's functions, you need to configure the `BASE_URL` variable by calling the `configure` function and passing an object with the `BASE_URL` property set to the base URL of your WordPress site.
 
-Here's an example of how to configure the `DOMAIN` and use the package's functions:
+Here's an example of how to configure the `BASE_URL` and use the package's functions:
 
 ```typescript
 import { configure, fetchPosts, PostFields } from 'fetch-wordpress-api';
 
-configure({ DOMAIN: 'https://example.com' });
+configure({ BASE_URL: 'https://example.com' });
 
 // This will return an array of posts objects
 const posts = await fetchPosts();
@@ -57,7 +57,7 @@ The package includes the following utility functions:
 
 This function sets up the package by using the provided options. It's crucial to use this function first in order to establish a connection with your Wordpress domain. 
 
-`configure({DOMAIN: 'your-wordpress-domain'}).`
+`configure({BASE_URL: 'your-wordpress-domain'}).`
 
 - **`fetchData(endpoint?, query?)`:** 
 
