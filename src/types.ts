@@ -3,10 +3,10 @@ import type { Url } from 'url';
 export interface ConfigureOptions {
   BASE_URL: string;
 }
-export type PostsWithId = `${Endpoints.posts}/${number}`;
-export type PagesWithId = `${Endpoints.pages}/${number}`;
+export type PostsWithId = `${'posts'}/${number}`;
+export type PagesWithId = `${'pages'}/${number}`;
 
-export type ExperimentalPostFields =
+export type PostFields =
   | 'author'
   | 'categories'
   | 'comment_status'
@@ -31,96 +31,68 @@ export type ExperimentalPostFields =
   | 'title'
   | 'type';
 
+export type CategoryFields =
+  | 'count'
+  | 'description'
+  | 'id'
+  | 'link'
+  | 'meta'
+  | 'parent'
+  | 'name'
+  | 'slug'
+  | 'taxonomy';
 
+export type PageFields =
+  | 'author'
+  | 'comment_status'
+  | 'content'
+  | 'date'
+  | 'date_gmt'
+  | 'excerpt'
+  | 'featured_media'
+  | 'generated_slug'
+  | 'guid'
+  | 'id'
+  | 'link'
+  | 'menu_order'
+  | 'meta'
+  | 'modified'
+  | 'modified_gmt'
+  | 'password'
+  | 'permalink_template'
+  | 'ping_status'
+  | 'slug'
+  | 'status'
+  | 'template'
+  | 'title'
+  | 'type';
 
-// Enum declarations
-export enum PostFields {
-  author = 'author',
-  categories = 'categories',
-  comment_status = 'comment_status',
-  content = 'content',
-  date = 'date',
-  date_gmt = 'date_gmt',
-  excerpt = 'excerpt',
-  featured_media = 'featured_media',
-  format = 'format',
-  guid = 'guid',
-  id = 'id',
-  link = 'link',
-  meta = 'meta',
-  modified = 'modified',
-  modified_gmt = 'modified_gmt',
-  ping_status = 'ping_status',
-  slug = 'slug',
-  status = 'status',
-  sticky = 'sticky',
-  tags = 'tags',
-  template = 'template',
-  title = 'title',
-  type = 'type',
-}
+type IdAutosaves = `${number}/autosaves`;
+type PagesRevisionsWithID = `${'pages'}/${number}/revisions`;
+type PostsRevisionsWithID = `${'posts'}/${number}/revisions`;
 
-export enum CategoryFields {
-  count = 'count',
-  description = 'description',
-  id = 'id',
-  link = 'link',
-  meta = 'meta',
-  parent = 'parent',
-  name = 'name',
-  slug = 'slug',
-  taxonomy = 'taxonomy',
-}
-
-export enum PageFields {
-  author = 'author',
-  comment_status = 'comment_status',
-  content = 'content',
-  date = 'date',
-  date_gmt = 'date_gmt',
-  excerpt = 'excerpt',
-  featured_media = 'featured_media',
-  generated_slug = 'generated_slug',
-  guid = 'guid',
-  id = 'id',
-  link = 'link',
-  menu_order = 'menu_order',
-  meta = 'meta',
-  modified = 'modified',
-  modified_gmt = 'modified_gmt',
-  password = 'password',
-  permalink_template = 'permalink_template',
-  ping_status = 'ping_status',
-  slug = 'slug',
-  status = 'status',
-  template = 'template',
-  title = 'title',
-  type = 'type',
-}
-
-export enum Endpoints {
-  blockDirectoryItems = 'block-directory/search',
-  blockRenderer = 'block-rendered',
-  blockRevisions = '<id>/autosaves',
-  blocks = 'blocks',
-  blockTypes = 'block-types',
-  categories = 'categories',
-  comments = 'comments',
-  media = 'media',
-  pages = 'pages',
-  pageRevisions = `pages/<id>/revisions`,
-  plugins = 'plugins',
-  postRevisions = `posts/<id>/revisions`,
-  posts = 'posts',
-  postStatuses = 'statuses',
-  postTypes = 'types',
-  search = 'search',
-  settings = 'settings',
-  tags = 'tags',
-  taxonomies = 'taxonomies',
-  themes = 'themes',
-  users = 'users',
-}
+export type Endpoints =
+  | 'block-directory/search'
+  | 'block-rendered'
+  | IdAutosaves
+  | 'blocks'
+  | 'block-types'
+  | 'categories'
+  | 'comments'
+  | 'media'
+  | 'pages'
+  | PagesRevisionsWithID
+  | 'plugins'
+  | PostsRevisionsWithID
+  | 'posts'
+  | 'statuses'
+  | 'types'
+  | 'search'
+  | 'settings'
+  | 'tags'
+  | 'taxonomies'
+  | 'themes'
+  | 'users';
 
 export interface GlobalParams {
   _fields?: string;
