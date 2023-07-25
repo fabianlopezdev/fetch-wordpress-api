@@ -6,6 +6,30 @@ export interface ConfigureOptions {
 export type PostsWithId = `${Endpoints.posts}/${number}`;
 export type PagesWithId = `${Endpoints.pages}/${number}`;
 
+export type ExperimentalPostFields =
+  | 'author'
+  | 'categories'
+  | 'comment_status'
+  | 'content'
+  | 'date'
+  | 'date_gmt'
+  | 'excerpt'
+  | 'featured_media'
+  | 'format'
+  | 'guid'
+  | 'id'
+  | 'link'
+  | 'meta'
+  | 'modified'
+  | 'modified_gmt'
+  | 'ping_status'
+  | 'slug'
+  | 'status'
+  | 'sticky'
+  | 'tags'
+  | 'template'
+  | 'title'
+  | 'type';
 // Enum declarations
 export enum PostFields {
   author = 'author',

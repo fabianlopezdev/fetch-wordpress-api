@@ -99,13 +99,13 @@ Retrieve a specified number of pages. You can specify the fields you want return
 
 `fetchPages(5, [Page.id, PageFields.title]).`
 
-- **`fetchPageBySlug(slug, pageFields)`:** 
+- **`fetchPageBySlug(slug, pageFields?)`:** 
 
 Retrieve a page using its slug. You can specify the fields you want returned. 
 
 `fetchPageBySlug('page-slug', [PageFields.id, PageFields.title]).`
 
-- **`fetchPageById(id, pageFields)`:** 
+- **`fetchPageById(id, pageFields?)`:** 
 
 Retrieve a page by its ID. You can specify the fields you want returned. 
 

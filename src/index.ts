@@ -30,6 +30,9 @@ import type {
   PostsWithId,
   PagesWithId,
   ConfigureOptions,
+  ExperimentalPostFields,
+  Category,
+  Page,
 } from './types';
 import { Endpoints, PostFields } from './types';
 
@@ -48,13 +51,13 @@ export function configure(options: ConfigureOptions) {
  * Fetches data from the specified endpoint and query parameters.
  * @param {string} endpoint - The API endpoint to fetch data from.
  * @param {URLSearchParams} [query] - The query parameters for the request.
- * @returns {Promise<any>} The fetched data as a JSON object.
+ * @returns {Promise<Post[] | Category[] | Page[]>} The fetched data as a JSON object.
  * @throws {Error} If the fetch request fails.
  */
 export async function fetchData(
   endpoint: Endpoints | PostsWithId | PagesWithId,
   query?: URLSearchParams
-) {
+): Promise<Post[] | Category[] | Page[]> {
   try {
     const url = new URL(`${BASE_URL}${WP_API}/${endpoint}`);
 
@@ -84,15 +87,21 @@ export async function fetchData(
  * @returns {Promise<Post[]>} The fetched posts as an array of Post objects.
  * @throws {Error} If the fetch request fails.
  */
-export async function fetchPosts(quantity?: number, postFields?: PostFields[]) {
+export async function fetchPosts(
+  quantity?: number,
+  postFields?: ExperimentalPostFields[]
+): Promise<Post[]> {
   try {
     if (typeof postFields === 'undefined' && !quantity)
-      return await fetchData(Endpoints.posts);
+      return (await fetchData(Endpoints.posts)) as Post[];
 
     const endpointParams = endpointParamsBuilder(postFields, quantity);
 
-    const data = await fetchData(Endpoints.posts, queryBuilder(endpointParams));
-    const posts: Post[] = await detectRedirects(data);
+    const data = (await fetchData(
+      Endpoints.posts,
+      queryBuilder(endpointParams)
+    )) as Post[];
+    const posts = (await detectRedirects(data)) as Post[];
 
     return posts;
   } catch (error) {
@@ -113,14 +122,17 @@ export async function fetchPostsInCategory(
   categoryId: number,
   postFields?: PostFields[],
   quantity?: number
-) {
+): Promise<Post[]> {
   try {
     const endpointParams = endpointParamsBuilder(postFields, quantity);
 
     endpointParams.categories = categoryId;
 
-    const data = await fetchData(Endpoints.posts, queryBuilder(endpointParams));
-    const posts: Post[] = await detectRedirects(data);
+    const data = (await fetchData(
+      Endpoints.posts,
+      queryBuilder(endpointParams)
+    )) as Post[];
+    const posts = (await detectRedirects(data)) as Post[];
 
     return posts;
   } catch (error) {
@@ -133,16 +145,22 @@ export async function fetchPostsInCategory(
  * Fetches a post by its slug with optional fields.
  * @param {string} slug - The slug of the post to fetch.
  * @param {PostFields[]} [postFields] - The fields to include in the fetched post.
- * @returns {Promise<Post>} The fetched post as a Post object.
+ * @returns {Promise<Post[]>} The fetched post as a Post object in an array.
  * @throws {Error} If the fetch request fails.
  */
-export async function fetchPostBySlug(slug: string, postFields?: PostFields[]) {
+export async function fetchPostBySlug(
+  slug: string,
+  postFields?: PostFields[]
+): Promise<Post[]> {
   try {
     const endpointParams = endpointParamsBuilder(postFields);
 
     endpointParams.slug = slug;
 
-    const post = await fetchData(Endpoints.posts, queryBuilder(endpointParams));
+    const post = (await fetchData(
+      Endpoints.posts,
+      queryBuilder(endpointParams)
+    )) as Post[];
 
     return post;
   } catch (error) {
@@ -155,16 +173,20 @@ export async function fetchPostBySlug(slug: string, postFields?: PostFields[]) {
  * Fetches a post by its ID with optional fields.
  * @param {number} id - The ID of the post to fetch.
  * @param {PostFields[]} [postFields] - The fields to include in the fetched post.
- * @returns {Promise<Post>} The fetched post as a Post object.
+ * @returns {Promise<Post[]>} The fetched post as a Post object in an array.
  * @throws {Error} If the fetch request fails.
  */
-export async function fetchPostById(id: number, postFields?: PostFields[]) {
+export async function fetchPostById(
+  id: number,
+  postFields?: PostFields[]
+): Promise<Post[]> {
   try {
     const endpointParams = endpointParamsBuilder(postFields);
-    return await fetchData(
+    const post = (await fetchData(
       `${Endpoints.posts}/${id}`,
       queryBuilder(endpointParams)
-    );
+    )) as Post[];
+    return post;
   } catch (error) {
     console.error('Error in fetchPostById:', error);
     throw error; // Propagate the error to the caller
@@ -176,17 +198,28 @@ export async function fetchPostById(id: number, postFields?: PostFields[]) {
 /**
  * Fetches all categories with optional fields.
  * @param {CategoryFields[]} [categoryFields] - The fields to include in the fetched categories.
- * @returns {Promise<any[]>} The fetched categories as an array of objects.
+ * @returns {Promise<Category[]>} The fetched categories as an array of objects.
  * @throws {Error} If the fetch request fails.
  */
-export async function fetchAllCategories(categoryFields?: CategoryFields[]) {
+export async function fetchAllCategories(
+  categoryFields?: CategoryFields[]
+): Promise<Category[]> {
   try {
-    if (typeof categoryFields === 'undefined')
-      return await fetchData(Endpoints.categories);
+    if (typeof categoryFields === 'undefined') {
+      const allCategories = (await fetchData(
+        Endpoints.categories
+      )) as Category[];
+      return allCategories;
+    }
 
     const endpointParams = endpointParamsBuilder(categoryFields);
 
-    return await fetchData(Endpoints.categories, queryBuilder(endpointParams));
+    const categoriesWithCustomFields = (await fetchData(
+      Endpoints.categories,
+      queryBuilder(endpointParams)
+    )) as Category[];
+
+    return categoriesWithCustomFields;
   } catch (error) {
     console.error('Error in fetchAllCategories:', error);
     throw error; // Propagate the error to the caller
@@ -199,17 +232,27 @@ export async function fetchAllCategories(categoryFields?: CategoryFields[]) {
  * Fetches a specified number of pages with optional fields.
  * @param {number} [quantity] - The number of pages to fetch.
  * @param {PageFields[]} [pageFields] - The fields to include in the fetched pages.
- * @returns {Promise<any[]>} The fetched pages as an array of objects.
+ * @returns {Promise<Page[]>} The fetched pages as an array of objects.
  * @throws {Error} If the fetch request fails.
  */
-export async function fetchPages(quantity?: number, pageFields?: PageFields[]) {
+export async function fetchPages(
+  quantity?: number,
+  pageFields?: PageFields[]
+): Promise<Page[]> {
   try {
-    if (typeof pageFields === 'undefined' && !quantity)
-      return await fetchData(Endpoints.pages);
+    if (typeof pageFields === 'undefined' && !quantity) {
+      const allPages = (await fetchData(Endpoints.pages)) as Page[];
+      return allPages;
+    }
 
     const endpointParams = endpointParamsBuilder(pageFields, quantity);
 
-    return await fetchData(Endpoints.pages, queryBuilder(endpointParams));
+    const pages = (await fetchData(
+      Endpoints.pages,
+      queryBuilder(endpointParams)
+    )) as Page[];
+
+    return pages;
   } catch (error) {
     console.error('Error in fetchPages:', error);
     throw error; // Propagate the error to the caller
@@ -220,16 +263,24 @@ export async function fetchPages(quantity?: number, pageFields?: PageFields[]) {
  * Fetches a page by its slug with optional fields.
  * @param {string} slug - The slug of the page to fetch.
  * @param {PageFields[]} [pageFields] - The fields to include in the fetched page.
- * @returns {Promise<any>} The fetched page as an object.
+ * @returns {Promise<Page[]>} The fetched page as a Page object in an array.
  * @throws {Error} If the fetch request fails.
  */
-export async function fetchPageBySlug(slug: string, pageFields?: PageFields[]) {
+export async function fetchPageBySlug(
+  slug: string,
+  pageFields?: PageFields[]
+): Promise<Page[]> {
   try {
     const endpointParams = endpointParamsBuilder(pageFields);
 
     endpointParams.slug = slug;
 
-    return await fetchData(Endpoints.pages, queryBuilder(endpointParams));
+    const page = (await fetchData(
+      Endpoints.pages,
+      queryBuilder(endpointParams)
+    )) as Page[];
+
+    return page;
   } catch (error) {
     console.error('Error in fetchPageBySlug:', error);
     throw error; // Propagate the error to the caller
@@ -240,16 +291,20 @@ export async function fetchPageBySlug(slug: string, pageFields?: PageFields[]) {
  * Fetches a page by its ID with optional fields.
  * @param {number} id - The ID of the page to fetch.
  * @param {PageFields[]} [pageFields] - The fields to include in the fetched page.
- * @returns {Promise<any>} The fetched page as an object.
+ * @returns {Promise<Page[]>} The fetched page as a Page object in an array.
  * @throws {Error} If the fetch request fails.
  */
-export async function fetchPageById(id: number, pageFields?: PageFields[]) {
+export async function fetchPageById(
+  id: number,
+  pageFields?: PageFields[]
+): Promise<Page[]> {
   try {
     const endpointParams = endpointParamsBuilder(pageFields);
-    return await fetchData(
+    const page = (await fetchData(
       `${Endpoints.pages}/${id}`,
       queryBuilder(endpointParams)
-    );
+    )) as Page[];
+    return page;
   } catch (error) {
     console.error('Error in fetchPageById:', error);
     throw error; // Propagate the error to the caller
