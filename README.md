@@ -36,7 +36,7 @@ const posts = await fetchPosts();
 const posts = await fetchPosts(5);
 
 // Fetch 3 posts containing only the title, content, and categories
-const postFields: PostFields = ['title', 'content', 'categories']; // Remember to import the type PostFields to get suggestions about the post fields available and to avoid passing anything other than a possible field.
+const postFields: PostFields[] = ['title', 'content', 'categories']; // Remember to import the type PostFields to get suggestions about the post fields available and to avoid passing anything other than a possible field.
 
 const posts = await fetchPosts(3, postFields);
 ```
@@ -65,6 +65,8 @@ Retrieve either all posts or a specified number of posts. You can specify the fi
 
 `fetchPosts(5, ['id', 'title']).`
 
+**Note:** `fetchPosts()` with no arguments will retrieve all posts with all fields. If you still want to retrieve all posts, but just with certain fields (as opposed to all of them), you can pass -1 in quantity: `fetchPosts(-1, ['id', 'title'])`
+
 - **`fetchPostsInCategory(categoryId, postFields?, quantity?)`:**
 
 Retrieve posts from a specific category. You can specify the fields you want returned for each post and limit the number of posts.
@@ -92,6 +94,8 @@ Retrieve all categories. You can specify the fields you want for each category.
 - **`fetchPages(quantity?, pageFields?)`**:
 
 Retrieve a specified number of pages. You can specify the fields you want returned for each page.
+
+**Note:** `fetchPages()` with no arguments will retrieve all pages with all fields. If you still want to retrieve all pages, but just with certain fields (as opposed to all of them), you can pass -1 in quantity: `fetchPages(-1, ['id', 'title'])`
 
 `fetchPages(5, ['id', 'title']).`
 

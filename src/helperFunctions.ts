@@ -14,7 +14,8 @@ export function endpointParamsBuilder(
   const endpointParams: PostParams = {};
 
   if (Array.isArray(fields) && fields.length > 0) {
-    endpointParams._fields = fields.join(',');
+    const uniqueFields = [...new Set(fields)];
+    endpointParams._fields = uniqueFields.join(',');
   }
   if (typeof quantity === 'number') {
     endpointParams.per_page = quantity;

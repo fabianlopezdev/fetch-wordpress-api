@@ -36,7 +36,6 @@ import type {
   Page,
 } from './types';
 
-
 // Variables Declarations
 
 const WP_API = '/wp-json/wp/v2'; // This may change if Wordpress changes the Wordpress API
@@ -93,15 +92,21 @@ export async function fetchPosts(
   postFields?: PostFields[]
 ): Promise<Post[]> {
   try {
-    if (typeof postFields === 'undefined' && !quantity)
-      return (await fetchData('posts')) as Post[];
+    if (typeof postFields === 'undefined' && !quantity) {
+      const allPosts = await fetchData<Post>('posts');
+      return allPosts;
+    } else if (typeof postFields !== 'undefined' && quantity === -1) {
+      const endpointParams = endpointParamsBuilder(postFields);
+
+      const data = await fetchData<Post>('posts', queryBuilder(endpointParams));
+      const allPostsWithCustomFields = await detectRedirects(data);
+
+      return allPostsWithCustomFields;
+    }
 
     const endpointParams = endpointParamsBuilder(postFields, quantity);
 
-    const data = await fetchData<Post>(
-      'posts',
-      queryBuilder(endpointParams)
-    );
+    const data = await fetchData<Post>('posts', queryBuilder(endpointParams));
     const posts = await detectRedirects(data);
 
     return posts;
@@ -129,10 +134,7 @@ export async function fetchPostsInCategory(
 
     endpointParams.categories = categoryId;
 
-    const data = await fetchData<Post>(
-      'posts',
-      queryBuilder(endpointParams)
-    );
+    const data = await fetchData<Post>('posts', queryBuilder(endpointParams));
     const posts = await detectRedirects(data);
 
     return posts;
@@ -239,14 +241,20 @@ export async function fetchPages(
     if (typeof pageFields === 'undefined' && !quantity) {
       const allPages = await fetchData<Page>('pages');
       return allPages;
-    }
+    } else if (typeof pageFields !== 'undefined' && quantity === -1) {
+      const endpointParams = endpointParamsBuilder(pageFields);
+
+      const allPagesWithCustomFields = await fetchData<Page>(
+        'pages',
+        queryBuilder(endpointParams)
+      );
+      
+
+      return allPagesWithCustomFields;}
 
     const endpointParams = endpointParamsBuilder(pageFields, quantity);
 
-    const pages = await fetchData<Page>(
-      'pages',
-      queryBuilder(endpointParams)
-    );
+    const pages = await fetchData<Page>('pages', queryBuilder(endpointParams));
 
     return pages;
   } catch (error) {
@@ -271,10 +279,7 @@ export async function fetchPageBySlug(
 
     endpointParams.slug = slug;
 
-    const page = await fetchData<Page>(
-      'pages',
-      queryBuilder(endpointParams)
-    );
+    const page = await fetchData<Page>('pages', queryBuilder(endpointParams));
 
     return page;
   } catch (error) {
@@ -306,6 +311,5 @@ export async function fetchPageById(
     throw error; // Propagate the error to the caller
   }
 }
-
 
 
