@@ -27,13 +27,15 @@ import type {
   CategoryFields,
   Post,
   PageFields,
+  Endpoints,
+  PostFields,
   PostsWithId,
   PagesWithId,
   ConfigureOptions,
   Category,
   Page,
 } from './types';
-import { Endpoints, PostFields } from './types';
+
 
 // Variables Declarations
 

@@ -116,13 +116,7 @@ In addition to importing the functions, you can also import the Typescript types
 To import the types, simply include them in your import statement:
 
 ```typescript
-import { fetchAllCategories, CategoryFields } from 'fetch-wordpress-api';
-
-// Fetch all categories containing only the title, content, and categories
-const categories = fetchAllCategories([
-  CategoryFields.id,
-  CategoryFields.title,
-]);
+import type { CategoryFields } from 'fetch-wordpress-api';
 ```
 
 By importing the types, you can benefit from TypeScript's type checking and autocompletion features when using this package.
