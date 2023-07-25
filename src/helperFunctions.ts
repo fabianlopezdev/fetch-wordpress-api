@@ -54,7 +54,7 @@ export function slugExtractor(link: string) {
  * @param {Post[]} posts - The array of posts to check for redirects.
  * @returns {Promise<Post[]>} A new array of posts with redirects resolved.
  */
-export async function detectRedirects(posts: Post[]) {
+export async function detectRedirects(posts: Post[]): Promise<Post[]> {
   const newPosts = await Promise.all(
     posts.map(async (post) => {
       try {
@@ -80,6 +80,6 @@ export async function detectRedirects(posts: Post[]) {
     })
   );
 
-  return newPosts.flat();
+  return newPosts.flat() as Post[];
 }
 

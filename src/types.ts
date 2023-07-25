@@ -30,6 +30,9 @@ export type ExperimentalPostFields =
   | 'template'
   | 'title'
   | 'type';
+
+
+
 // Enum declarations
 export enum PostFields {
   author = 'author',
@@ -203,6 +206,7 @@ export type Category = {
 // A TypeScript type for a WordPress page
 export type Page = {
   author: number;
+  categories?: number[]; //Note that this is not returned by the Wordpress API, this is used in detectRedirects function in helperFunctions, to convert a page into a post.
   comment_status: 'open' | 'closed';
   content: {
     rendered: string;

@@ -54,10 +54,10 @@ export function configure(options: ConfigureOptions) {
  * @returns {Promise<Post[] | Category[] | Page[]>} The fetched data as a JSON object.
  * @throws {Error} If the fetch request fails.
  */
-export async function fetchData(
+export async function fetchData<T>(
   endpoint: Endpoints | PostsWithId | PagesWithId,
   query?: URLSearchParams
-): Promise<Post[] | Category[] | Page[]> {
+): Promise<T[]> {
   try {
     const url = new URL(`${BASE_URL}${WP_API}/${endpoint}`);
 
@@ -97,11 +97,11 @@ export async function fetchPosts(
 
     const endpointParams = endpointParamsBuilder(postFields, quantity);
 
-    const data = (await fetchData(
+    const data = await fetchData<Post>(
       Endpoints.posts,
       queryBuilder(endpointParams)
-    )) as Post[];
-    const posts = (await detectRedirects(data)) as Post[];
+    );
+    const posts = await detectRedirects(data);
 
     return posts;
   } catch (error) {
@@ -128,11 +128,11 @@ export async function fetchPostsInCategory(
 
     endpointParams.categories = categoryId;
 
-    const data = (await fetchData(
+    const data = await fetchData<Post>(
       Endpoints.posts,
       queryBuilder(endpointParams)
-    )) as Post[];
-    const posts = (await detectRedirects(data)) as Post[];
+    );
+    const posts = await detectRedirects(data);
 
     return posts;
   } catch (error) {
@@ -157,10 +157,10 @@ export async function fetchPostBySlug(
 
     endpointParams.slug = slug;
 
-    const post = (await fetchData(
+    const post = await fetchData<Post>(
       Endpoints.posts,
       queryBuilder(endpointParams)
-    )) as Post[];
+    );
 
     return post;
   } catch (error) {
@@ -182,10 +182,10 @@ export async function fetchPostById(
 ): Promise<Post[]> {
   try {
     const endpointParams = endpointParamsBuilder(postFields);
-    const post = (await fetchData(
+    const post = await fetchData<Post>(
       `${Endpoints.posts}/${id}`,
       queryBuilder(endpointParams)
-    )) as Post[];
+    );
     return post;
   } catch (error) {
     console.error('Error in fetchPostById:', error);
@@ -206,18 +206,16 @@ export async function fetchAllCategories(
 ): Promise<Category[]> {
   try {
     if (typeof categoryFields === 'undefined') {
-      const allCategories = (await fetchData(
-        Endpoints.categories
-      )) as Category[];
+      const allCategories = await fetchData<Category>(Endpoints.categories);
       return allCategories;
     }
 
     const endpointParams = endpointParamsBuilder(categoryFields);
 
-    const categoriesWithCustomFields = (await fetchData(
+    const categoriesWithCustomFields = await fetchData<Category>(
       Endpoints.categories,
       queryBuilder(endpointParams)
-    )) as Category[];
+    );
 
     return categoriesWithCustomFields;
   } catch (error) {
@@ -241,16 +239,16 @@ export async function fetchPages(
 ): Promise<Page[]> {
   try {
     if (typeof pageFields === 'undefined' && !quantity) {
-      const allPages = (await fetchData(Endpoints.pages)) as Page[];
+      const allPages = await fetchData<Page>(Endpoints.pages);
       return allPages;
     }
 
     const endpointParams = endpointParamsBuilder(pageFields, quantity);
 
-    const pages = (await fetchData(
+    const pages = await fetchData<Page>(
       Endpoints.pages,
       queryBuilder(endpointParams)
-    )) as Page[];
+    );
 
     return pages;
   } catch (error) {
@@ -275,10 +273,10 @@ export async function fetchPageBySlug(
 
     endpointParams.slug = slug;
 
-    const page = (await fetchData(
+    const page = await fetchData<Page>(
       Endpoints.pages,
       queryBuilder(endpointParams)
-    )) as Page[];
+    );
 
     return page;
   } catch (error) {
@@ -300,10 +298,10 @@ export async function fetchPageById(
 ): Promise<Page[]> {
   try {
     const endpointParams = endpointParamsBuilder(pageFields);
-    const page = (await fetchData(
+    const page = await fetchData<Page>(
       `${Endpoints.pages}/${id}`,
       queryBuilder(endpointParams)
-    )) as Page[];
+    );
     return page;
   } catch (error) {
     console.error('Error in fetchPageById:', error);
