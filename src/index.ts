@@ -30,7 +30,6 @@ import type {
   PostsWithId,
   PagesWithId,
   ConfigureOptions,
-  ExperimentalPostFields,
   Category,
   Page,
 } from './types';
@@ -89,16 +88,16 @@ export async function fetchData<T>(
  */
 export async function fetchPosts(
   quantity?: number,
-  postFields?: ExperimentalPostFields[]
+  postFields?: PostFields[]
 ): Promise<Post[]> {
   try {
     if (typeof postFields === 'undefined' && !quantity)
-      return (await fetchData(Endpoints.posts)) as Post[];
+      return (await fetchData('posts')) as Post[];
 
     const endpointParams = endpointParamsBuilder(postFields, quantity);
 
     const data = await fetchData<Post>(
-      Endpoints.posts,
+      'posts',
       queryBuilder(endpointParams)
     );
     const posts = await detectRedirects(data);
@@ -129,7 +128,7 @@ export async function fetchPostsInCategory(
     endpointParams.categories = categoryId;
 
     const data = await fetchData<Post>(
-      Endpoints.posts,
+      'posts',
       queryBuilder(endpointParams)
     );
     const posts = await detectRedirects(data);
@@ -157,10 +156,7 @@ export async function fetchPostBySlug(
 
     endpointParams.slug = slug;
 
-    const post = await fetchData<Post>(
-      Endpoints.posts,
-      queryBuilder(endpointParams)
-    );
+    const post = await fetchData<Post>('posts', queryBuilder(endpointParams));
 
     return post;
   } catch (error) {
@@ -183,7 +179,7 @@ export async function fetchPostById(
   try {
     const endpointParams = endpointParamsBuilder(postFields);
     const post = await fetchData<Post>(
-      `${Endpoints.posts}/${id}`,
+      `${'posts'}/${id}`,
       queryBuilder(endpointParams)
     );
     return post;
@@ -206,14 +202,14 @@ export async function fetchAllCategories(
 ): Promise<Category[]> {
   try {
     if (typeof categoryFields === 'undefined') {
-      const allCategories = await fetchData<Category>(Endpoints.categories);
+      const allCategories = await fetchData<Category>('categories');
       return allCategories;
     }
 
     const endpointParams = endpointParamsBuilder(categoryFields);
 
     const categoriesWithCustomFields = await fetchData<Category>(
-      Endpoints.categories,
+      'categories',
       queryBuilder(endpointParams)
     );
 
@@ -239,14 +235,14 @@ export async function fetchPages(
 ): Promise<Page[]> {
   try {
     if (typeof pageFields === 'undefined' && !quantity) {
-      const allPages = await fetchData<Page>(Endpoints.pages);
+      const allPages = await fetchData<Page>('pages');
       return allPages;
     }
 
     const endpointParams = endpointParamsBuilder(pageFields, quantity);
 
     const pages = await fetchData<Page>(
-      Endpoints.pages,
+      'pages',
       queryBuilder(endpointParams)
     );
 
@@ -274,7 +270,7 @@ export async function fetchPageBySlug(
     endpointParams.slug = slug;
 
     const page = await fetchData<Page>(
-      Endpoints.pages,
+      'pages',
       queryBuilder(endpointParams)
     );
 
@@ -299,7 +295,7 @@ export async function fetchPageById(
   try {
     const endpointParams = endpointParamsBuilder(pageFields);
     const page = await fetchData<Page>(
-      `${Endpoints.pages}/${id}`,
+      `${'pages'}/${id}`,
       queryBuilder(endpointParams)
     );
     return page;
@@ -308,4 +304,6 @@ export async function fetchPageById(
     throw error; // Propagate the error to the caller
   }
 }
+
+
 

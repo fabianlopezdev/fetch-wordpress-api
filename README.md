@@ -1,9 +1,9 @@
 # Fetch WordPress API
 
 [![npm version](https://badge.fury.io/js/fetch-wordpress-api.svg)](https://badge.fury.io/js/fetch-wordpress-api)
- ![WordPress](https://img.shields.io/badge/WordPress-%23117AC9.svg?style=flat&logo=WordPress&logoColor=white)
- ![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=flat&logo=typescript&logoColor=white)
- ![JavaScript](https://img.shields.io/badge/javascript-%23323330.svg?style=flat&logo=javascript&logoColor=%23F7DF1E)
+![WordPress](https://img.shields.io/badge/WordPress-%23117AC9.svg?style=flat&logo=WordPress&logoColor=white)
+![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=flat&logo=typescript&logoColor=white)
+![JavaScript](https://img.shields.io/badge/javascript-%23323330.svg?style=flat&logo=javascript&logoColor=%23F7DF1E)
 [![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=Fabs-and_fetch-wordpress-api&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=Fabs-and_fetch-wordpress-api)
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=Fabs-and_fetch-wordpress-api&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=Fabs-and_fetch-wordpress-api)
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=Fabs-and_fetch-wordpress-api&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=Fabs-and_fetch-wordpress-api)
@@ -36,11 +36,7 @@ const posts = await fetchPosts();
 const posts = await fetchPosts(5);
 
 // Fetch 3 posts containing only the title, content, and categories
-const postFields = [
-  PostFields.title,
-  PostFields.content,
-  PostFields.categories,
-]; // Remember to import the type PostFields at the beginning of your file
+const postFields: PostFields = ['title', 'content', 'categories']; // Remember to import the type PostFields to get suggestions about the post fields available and to avoid passing anything other than a possible field.
 
 const posts = await fetchPosts(3, postFields);
 ```
@@ -53,13 +49,13 @@ Please refer to the source code and TypeScript type definitions for detailed inf
 
 The package includes the following utility functions:
 
-- **`configure(options)`:** 
+- **`configure(options)`:**
 
-This function sets up the package by using the provided options. It's crucial to use this function first in order to establish a connection with your Wordpress domain. 
+This function sets up the package by using the provided options. It's crucial to use this function first in order to establish a connection with your Wordpress domain.
 
 `configure({BASE_URL: 'your-wordpress-domain'}).`
 
-- **`fetchData(endpoint?, query?)`:** 
+- **`fetchData(endpoint?, query?)`:**
 
 Main function that all other utility functions use to retrieve data.
 
@@ -67,49 +63,49 @@ Main function that all other utility functions use to retrieve data.
 
 Retrieve either all posts or a specified number of posts. You can specify the fields you want returned for each post.
 
-`fetchPosts(5, [Postfields.id, Postfields.title]).`
+`fetchPosts(5, ['id', 'title']).`
 
-- **`fetchPostsInCategory(categoryId, postFields?, quantity?)`:** 
+- **`fetchPostsInCategory(categoryId, postFields?, quantity?)`:**
 
-Retrieve posts from a specific category. You can specify the fields you want returned for each post and limit the number of posts. 
+Retrieve posts from a specific category. You can specify the fields you want returned for each post and limit the number of posts.
 
-`fetchPostsInCategory(1, [Postfields.id, Postfields.title], 5).`
+`fetchPostsInCategory(1, ['id', 'title'], 5).`
 
-- **`fetchPostBySlug(slug, postFields?)`:** 
+- **`fetchPostBySlug(slug, postFields?)`:**
 
 Retrieve a post using its slug. You can specify the fields you want returned.
 
-`fetchPostBySlug('your/post-slug', [Postfields.id, Postfields.title]).`
+`fetchPostBySlug('your/post-slug', ['id', 'title']).`
 
-- **`fetchPostById(id, postFields?)`:** 
+- **`fetchPostById('id', postFields?)`:**
 
-Retrieve a post by its ID. You can specify the fields you want returned. 
+Retrieve a post by its ID. You can specify the fields you want returned.
 
-`fetchPostById(123, [Postfields.id, Postfields.title]).`
+`fetchPostById(123, ['id', 'title']).`
 
-- **`fetchAllCategories(categoryFields?)`:** 
+- **`fetchAllCategories(categoryFields?)`:**
 
-Retrieve all categories. You can specify the fields you want for each category. 
+Retrieve all categories. You can specify the fields you want for each category.
 
-`fetchAllCategories([CategoryFields.id, CategoryFields.name]).`
+`fetchAllCategories(['id', 'name']).`
 
-- **`fetchPages(quantity?, pageFields?)`**: 
+- **`fetchPages(quantity?, pageFields?)`**:
 
-Retrieve a specified number of pages. You can specify the fields you want returned for each page. 
+Retrieve a specified number of pages. You can specify the fields you want returned for each page.
 
-`fetchPages(5, [Page.id, PageFields.title]).`
+`fetchPages(5, ['id', 'title']).`
 
-- **`fetchPageBySlug(slug, pageFields?)`:** 
+- **`fetchPageBySlug(slug, pageFields?)`:**
 
-Retrieve a page using its slug. You can specify the fields you want returned. 
+Retrieve a page using its slug. You can specify the fields you want returned.
 
-`fetchPageBySlug('page-slug', [PageFields.id, PageFields.title]).`
+`fetchPageBySlug('page-slug', ['id', 'title']).`
 
-- **`fetchPageById(id, pageFields?)`:** 
+- **`fetchPageById(id, pageFields?)`:**
 
-Retrieve a page by its ID. You can specify the fields you want returned. 
+Retrieve a page by its ID. You can specify the fields you want returned.
 
-`fetchPageById(123, [PageFields.id, PageFields.title]).`
+`fetchPageById(123, ['id', 'title']).`
 
 For more detailed information on the available functions and their parameters, please refer to the source code and TypeScript type definitions.
 
@@ -123,7 +119,10 @@ To import the types, simply include them in your import statement:
 import { fetchAllCategories, CategoryFields } from 'fetch-wordpress-api';
 
 // Fetch all categories containing only the title, content, and categories
-const categories = fetchAllCategories([CategoryFields.id, CategoryFields.title])
+const categories = fetchAllCategories([
+  CategoryFields.id,
+  CategoryFields.title,
+]);
 ```
 
 By importing the types, you can benefit from TypeScript's type checking and autocompletion features when using this package.
@@ -157,31 +156,30 @@ type Post = {
   type: string;
 };
 
-enum PostFields {
-  author = 'author',
-  categories = 'categories',
-  comment_status = 'comment_status',
-  content = 'content',
-  date = 'date',
-  date_gmt = 'date_gmt',
-  excerpt = 'excerpt',
-  featured_media = 'featured_media',
-  format = 'format',
-  guid = 'guid',
-  id = 'id',
-  link = 'link',
-  meta = 'meta',
-  modified = 'modified',
-  modified_gmt = 'modified_gmt',
-  ping_status = 'ping_status',
-  slug = 'slug',
-  status = 'status',
-  sticky = 'sticky',
-  tags = 'tags',
-  template = 'template',
-  title = 'title',
-  type = 'type',
-}
+export type PostFields =
+  | 'author'
+  | 'categories'
+  | 'comment_status'
+  | 'content'
+  | 'date'
+  | 'date_gmt'
+  | 'excerpt'
+  | 'featured_media'
+  | 'format'
+  | 'guid'
+  | 'id'
+  | 'link'
+  | 'meta'
+  | 'modified'
+  | 'modified_gmt'
+  | 'ping_status'
+  | 'slug'
+  | 'status'
+  | 'sticky'
+  | 'tags'
+  | 'template'
+  | 'title'
+  | 'type';
 
 type Category = {
   count: number;
@@ -194,43 +192,41 @@ type Category = {
   taxonomy: string;
 };
 
-enum CategoryFields {
-  count = 'count',
-  description = 'description',
-  id = 'id',
-  link = 'link',
-  meta = 'meta',
-  parent = 'parent',
-  name = 'name',
-  slug = 'slug',
-  taxonomy = 'taxonomy',
-}
+export type CategoryFields =
+  | 'count'
+  | 'description'
+  | 'id'
+  | 'link'
+  | 'meta'
+  | 'parent'
+  | 'name'
+  | 'slug'
+  | 'taxonomy';
 
-enum PageFields {
-  author = 'author',
-  comment_status = 'comment_status',
-  content = 'content',
-  date = 'date',
-  date_gmt = 'date_gmt',
-  excerpt = 'excerpt',
-  featured_media = 'featured_media',
-  generated_slug = 'generated_slug',
-  guid = 'guid',
-  id = 'id',
-  link = 'link',
-  menu_order = 'menu_order',
-  meta = 'meta',
-  modified = 'modified',
-  modified_gmt = 'modified_gmt',
-  password = 'password',
-  permalink_template = 'permalink_template',
-  ping_status = 'ping_status',
-  slug = 'slug',
-  status = 'status',
-  template = 'template',
-  title = 'title',
-  type = 'type',
-}
+export type PageFields =
+  | 'author'
+  | 'comment_status'
+  | 'content'
+  | 'date'
+  | 'date_gmt'
+  | 'excerpt'
+  | 'featured_media'
+  | 'generated_slug'
+  | 'guid'
+  | 'id'
+  | 'link'
+  | 'menu_order'
+  | 'meta'
+  | 'modified'
+  | 'modified_gmt'
+  | 'password'
+  | 'permalink_template'
+  | 'ping_status'
+  | 'slug'
+  | 'status'
+  | 'template'
+  | 'title'
+  | 'type';
 
 type Page = {
   author: number;
