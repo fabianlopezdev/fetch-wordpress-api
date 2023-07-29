@@ -95,9 +95,9 @@ Retrieve all categories. You can specify the fields you want for each category.
 
 Retrieve a specified number of pages. You can specify the fields you want returned for each page.
 
-**Note:** `fetchPages()` with no arguments will retrieve all pages with all fields. If you still want to retrieve all pages, but just with certain fields (as opposed to all of them), you can pass -1 in quantity: `fetchPages(-1, ['id', 'title'])`
-
 `fetchPages(5, ['id', 'title']).`
+
+**Note:** `fetchPages()` with no arguments will retrieve all pages with all fields. If you still want to retrieve all pages, but just with certain fields (as opposed to all of them), you can pass -1 in quantity: `fetchPages(-1, ['id', 'title'])`
 
 - **`fetchPageBySlug(slug, pageFields?)`:**
 
