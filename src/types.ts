@@ -217,3 +217,65 @@ export type Page = {
   type: 'page';
 };
 
+export type Media = {
+  alt_text: string;
+  author: number;
+  caption: { rendered: string };
+  comment_status: 'open' | 'closed';
+  date: string | null;
+  date_gmt: string | null;
+  description: { rendered: string };
+  featured_media: number;
+  generated_slug: string;
+  guid: {
+    rendered: string;
+  };
+  id: number;
+  link: string;
+  media_details: {
+    width: number;
+    height: number;
+    file: string;
+    sizes: Record<string, MediaSize>;
+    image_meta: ImageMeta;
+  };
+  media_type: string;
+  meta: Record<string, any>;
+  mime_type: string;
+  missing_image_sizes: string[];
+  modified: string;
+  modified_gmt: string;
+  permalink_template: string;
+  ping_status: 'open' | 'closed';
+  slug: string;
+  source_url: string;
+  status: 'publish' | 'future' | 'draft' | 'pending' | 'private';
+  template: string;
+  title: {
+    rendered: string;
+    raw?: string;
+  };
+  type: 'page';
+
+};
+
+interface MediaSize {
+  file: string;
+  height: number;
+  mime_type: string;
+  source_url: string;
+  width: number;
+}
+
+interface ImageMeta {
+  aperture: number | null;
+  camera: string | null;
+  caption: string | null;
+  created_timestamp: number | null;
+  credit: string | null;
+  focal_length: number | null;
+  iso: number | null;
+  orientation: string | null;
+  shutter_speed: number | null;
+  title: string | null;
+}

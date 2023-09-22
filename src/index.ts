@@ -59,7 +59,8 @@ export async function fetchData<T>(
   query?: URLSearchParams
 ): Promise<T[]> {
   try {
-    const url = new URL(`${BASE_URL}${WP_API}/${endpoint}`);
+    // const url = new URL(`${BASE_URL}${WP_API}/${endpoint}`);
+    const url = new URL(`https://cbgranollers.cat${WP_API}/${endpoint}`);
 
     if (query) url.search = query.toString();
 
@@ -312,4 +313,19 @@ export async function fetchPageById(
   }
 }
 
+export async function getImageLink(featured_media: PostFields) {
+  try {
+    const endpointParams = endpointParamsBuilder([featured_media]);
+
+    const imageMetaInfo = await fetchData('media', queryBuilder(endpointParams));
+
+    const imageLink = imageMetaInfo.media_details.sizes.full.source_url;
+    
+    return imageLink;
+    
+  } catch (error) {
+    console.error('Error in getImageLink:', error);
+    throw error; // Propagate the error to the caller
+  }
+}
 
