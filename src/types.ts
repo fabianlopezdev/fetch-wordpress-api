@@ -6,6 +6,8 @@ export interface ConfigureOptions {
 export type PostsWithId = `${'posts'}/${number}`;
 export type PagesWithId = `${'pages'}/${number}`;
 
+export type MediaWithId = `${'media'}/${number}`;
+
 export type PostFields =
   | 'author'
   | 'categories'
@@ -150,6 +152,7 @@ export type Post = {
   format: string;
   guid: string;
   id: { rendered: string; raw: string };
+  image: string; //Note that this is not returned by the Wordpress API, this is used in addImageToPost function in helperFunctions, to add the link of a Wordpress post in the post returned by the API.
   link: string | Url;
   meta: Record<string, string | number | boolean | any[] | Record<string, any>>;
   modified: string | Date;
@@ -198,6 +201,7 @@ export type Page = {
     rendered: string;
   };
   id: number;
+  image: string; //Note that this is not returned by the Wordpress API, this is used in addImageToPost function in helperFunctions, to add the link of a Wordpress post in the post returned by the API.
   link: string;
   menu_order: number;
   meta: Record<string, any>;
@@ -236,8 +240,8 @@ export type Media = {
     width: number;
     height: number;
     file: string;
-    sizes: Record<string, MediaSize>;
-    image_meta: ImageMeta;
+    sizes: Record<string, any>;
+    image_meta: Record<string, any>;
   };
   media_type: string;
   meta: Record<string, any>;
@@ -256,26 +260,7 @@ export type Media = {
     raw?: string;
   };
   type: 'page';
-
 };
 
-interface MediaSize {
-  file: string;
-  height: number;
-  mime_type: string;
-  source_url: string;
-  width: number;
-}
 
-interface ImageMeta {
-  aperture: number | null;
-  camera: string | null;
-  caption: string | null;
-  created_timestamp: number | null;
-  credit: string | null;
-  focal_length: number | null;
-  iso: number | null;
-  orientation: string | null;
-  shutter_speed: number | null;
-  title: string | null;
-}
+

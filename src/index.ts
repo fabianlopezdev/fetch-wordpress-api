@@ -8,6 +8,7 @@ export type {
   Post,
   PostParams,
   PostsWithId,
+  Media,
 } from './types';
 
 // These types are enums, they can be also used as values
@@ -16,6 +17,7 @@ export { CategoryFields, Endpoints, PageFields, PostFields } from './types';
 // Import Api helper functions
 
 import {
+  addImagesToPost,
   detectRedirects,
   endpointParamsBuilder,
   queryBuilder,
@@ -34,6 +36,8 @@ import type {
   ConfigureOptions,
   Category,
   Page,
+  Media,
+  MediaWithId,
 } from './types';
 
 // Variables Declarations
@@ -55,7 +59,7 @@ export function configure(options: ConfigureOptions) {
  * @throws {Error} If the fetch request fails.
  */
 export async function fetchData<T>(
-  endpoint: Endpoints | PostsWithId | PagesWithId,
+  endpoint: Endpoints | PostsWithId | PagesWithId | MediaWithId,
   query?: URLSearchParams
 ): Promise<T[]> {
   try {
@@ -72,7 +76,14 @@ export async function fetchData<T>(
 
     const data = await res.json();
 
-    return data;
+    if (endpoint === 'posts' || endpoint === 'pages') {
+      const dataWithImages = await addImagesToPost(data);
+     
+      return dataWithImages as any;
+    }
+
+
+    return Array.isArray(data) ? data : [data];
   } catch (error) {
     console.error('Error in fetchData:', error);
     throw error; // Propagate the error to the caller
@@ -91,15 +102,17 @@ export async function fetchData<T>(
 export async function fetchPosts(
   quantity?: number,
   postFields?: PostFields[]
-): Promise<Post[]> {
-  try {
-    if (typeof postFields === 'undefined' && !quantity) {
-      const allPosts = await fetchData<Post>('posts');
+  ): Promise<Post[]> {
+    try {
+      if (typeof postFields === 'undefined' && !quantity) {
+        const allPosts = await fetchData<Post>('posts');
+        
       return allPosts;
     } else if (typeof postFields !== 'undefined' && quantity === -1) {
       const endpointParams = endpointParamsBuilder(postFields);
 
       const data = await fetchData<Post>('posts', queryBuilder(endpointParams));
+
       const allPostsWithCustomFields = await detectRedirects(data);
 
       return allPostsWithCustomFields;
@@ -109,7 +122,6 @@ export async function fetchPosts(
 
     const data = await fetchData<Post>('posts', queryBuilder(endpointParams));
     const posts = await detectRedirects(data);
-
     return posts;
   } catch (error) {
     console.error('Error in fetchPosts:', error);
@@ -249,9 +261,9 @@ export async function fetchPages(
         'pages',
         queryBuilder(endpointParams)
       );
-      
 
-      return allPagesWithCustomFields;}
+      return allPagesWithCustomFields;
+    }
 
     const endpointParams = endpointParamsBuilder(pageFields, quantity);
 
@@ -313,19 +325,6 @@ export async function fetchPageById(
   }
 }
 
-export async function getImageLink(featured_media: PostFields) {
-  try {
-    const endpointParams = endpointParamsBuilder([featured_media]);
 
-    const imageMetaInfo = await fetchData('media', queryBuilder(endpointParams));
 
-    const imageLink = imageMetaInfo.media_details.sizes.full.source_url;
-    
-    return imageLink;
-    
-  } catch (error) {
-    console.error('Error in getImageLink:', error);
-    throw error; // Propagate the error to the caller
-  }
-}
 

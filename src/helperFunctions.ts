@@ -1,5 +1,5 @@
-import type { Post, PostParams } from './types';
-import { fetchPageBySlug } from './index';
+import type { Media, Page, Post, PostParams } from './types';
+import { fetchData, fetchPageBySlug } from './index';
 
 /**
  * Builds an object containing endpoint parameters based on the provided fields and quantity.
@@ -67,6 +67,7 @@ export async function detectRedirects(posts: Post[]): Promise<Post[]> {
             redirectedPost[0] = {
               ...redirectedPost[0],
               categories: post.categories,
+              image: post.image,
             };
           }
 
@@ -83,4 +84,39 @@ export async function detectRedirects(posts: Post[]): Promise<Post[]> {
 
   return newPosts.flat() as Post[];
 }
+
+export async function addImagesToPost(data: Post[] | Page[]) { 
+
+  if (data[0].image || data[0].featured_media === 0) return data;
+   const postsWithImages = await Promise.all(
+     data.map(async (post: Post | Page) => {
+       try {
+         const imageLink = await getImageLink(post.featured_media);
+         post = { ...post, image: imageLink };
+         return post;
+       } catch (error) {
+         console.error('Error in addImageToPost:', error);
+         return post;
+       }
+     })
+   );
+
+   return postsWithImages;
+}
+
+export async function getImageLink(featured_media: number) {
+  try {
+    const imageMetaInfo = await fetchData<Media>(
+      `${'media'}/${featured_media}`
+    );
+
+    const imageLink = imageMetaInfo[0].media_details.sizes.full.source_url;
+
+    return imageLink;
+  } catch (error) {
+    console.error('Error in getImageLink:', error);
+    throw error; // Propagate the error to the caller
+  }
+}
+
 
