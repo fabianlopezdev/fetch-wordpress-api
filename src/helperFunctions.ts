@@ -68,7 +68,7 @@ export async function detectRedirects(posts: Post[]): Promise<Post[]> {
               ...redirectedPost[0],
               categories: post.categories,
               image: post.image,
-              title: { ...redirectedPost[0].title, rendered: post.title.rendered },
+              title: {rendered: post.title.rendered},
             };
           }
 
