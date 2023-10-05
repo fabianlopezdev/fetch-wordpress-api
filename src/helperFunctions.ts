@@ -88,7 +88,7 @@ export async function detectRedirects(posts: Post[]): Promise<Post[]> {
 
 export async function addImagesToPost(data: Post[] | Page[]) { 
 
-  if (data[0].image || data[0].featured_media === 0) return data;
+  if (data[0]?.image || data[0]?.featured_media === 0) return data;
    const postsWithImages = await Promise.all(
      data.map(async (post: Post | Page) => {
        try {
