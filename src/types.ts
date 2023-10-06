@@ -20,6 +20,7 @@ export type PostFields =
   | 'format'
   | 'guid'
   | 'id'
+  | 'image'
   | 'link'
   | 'meta'
   | 'modified'

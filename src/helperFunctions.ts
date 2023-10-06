@@ -125,9 +125,10 @@ export async function getImageLink(featured_media: number) {
 
 export async function getImagesLink(id: number) {
   try {
+
     const images = await fetchData<Media>(
       `${'media'}`,
-      queryBuilder({ parent: id } as PostParams)
+      queryBuilder({ parent: id, per_page: 100 } as { parent: number; per_page: number })
     );
 
     
@@ -139,4 +140,5 @@ export async function getImagesLink(id: number) {
     throw error; // Propagate the error to the caller
   }
 }
+
 

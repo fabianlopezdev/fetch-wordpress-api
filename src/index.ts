@@ -50,7 +50,6 @@ export function configure(options: ConfigureOptions) {
 }
 
 // Functions Declarations
-
 /**
  * Fetches data from the specified endpoint and query parameters.
  * @param {string} endpoint - The API endpoint to fetch data from.
@@ -76,7 +75,12 @@ export async function fetchData<T>(
 
     const data = await res.json();
     // Determine whether to fetch images based on query
-    const fetchImages = !query || query.has('image') || query.toString() === '';
+     let fetchImages = false;
+
+     // Set fetchImages to true if per_page is the only query parameter
+     if ((query && query.has('per_page') && [...query.keys()].length === 1 || query && [query.keys()].length > 1 && query.has('image') )) {
+       fetchImages = true;
+     }
 
     if ((endpoint === 'posts' || endpoint === 'pages') && fetchImages) {
       const dataWithImages = await addImagesToPost(data);
@@ -122,6 +126,7 @@ export async function fetchPosts(
 
     const data = await fetchData<Post>('posts', queryBuilder(endpointParams));
     const posts = await detectRedirects(data);
+  
     return posts;
   } catch (error) {
     console.error('Error in fetchPosts:', error);
@@ -327,26 +332,15 @@ export async function fetchPageById(
 
 export async function fetchImagesInPageBySlug(slug: string) {
   try {
-    const page = await fetchPageBySlug(slug, ['id']);
- 
+    const page = await fetchPageBySlug(slug);
     const {id} = page[0];
 
     const images = await getImagesLink(id);
-
+    console.log('images', images)
     return images;
   } catch (error) {
     console.error('Error in fetchImagesInPageBySlug:', error);
     throw error; // Propagate the error to the caller
   }
 }
-
-configure({ BASE_URL: `https://cbgranollers.cat` });
-
-// fetchImagesInPageBySlug(`equips-masculins-temporada-21-22`)
-
-fetchImagesInPageBySlug(`equips-masculins-temporada-22-23`);
-
-
-
-
 
