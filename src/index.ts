@@ -20,6 +20,7 @@ import {
   addImagesToPost,
   detectRedirects,
   endpointParamsBuilder,
+  getImagesLink,
   queryBuilder,
 } from './helperFunctions';
 
@@ -69,17 +70,18 @@ export async function fetchData<T>(
     const res = await fetch(url);
 
     if (!res.ok) {
+      console.error('Response object:', res);
       throw new Error(`Error in fetchData: ${res.status} ${res.statusText}`);
     }
 
     const data = await res.json();
+    // Determine whether to fetch images based on query
+    const fetchImages = !query || query.has('image') || query.toString() === '';
 
-    if (endpoint === 'posts' || endpoint === 'pages') {
+    if ((endpoint === 'posts' || endpoint === 'pages') && fetchImages) {
       const dataWithImages = await addImagesToPost(data);
-     
       return dataWithImages as any;
     }
-
 
     return Array.isArray(data) ? data : [data];
   } catch (error) {
@@ -172,7 +174,7 @@ export async function fetchPostBySlug(
     endpointParams.slug = slug;
 
     const post = await fetchData<Post>('posts', queryBuilder(endpointParams));
-
+    
     return post;
   } catch (error) {
     console.error('Error in fetchPostBySlug:', error);
@@ -291,7 +293,7 @@ export async function fetchPageBySlug(
     endpointParams.slug = slug;
 
     const page = await fetchData<Page>('pages', queryBuilder(endpointParams));
-
+ 
     return page;
   } catch (error) {
     console.error('Error in fetchPageBySlug:', error);
@@ -322,6 +324,28 @@ export async function fetchPageById(
     throw error; // Propagate the error to the caller
   }
 }
+
+export async function fetchImagesInPageBySlug(slug: string) {
+  try {
+    const page = await fetchPageBySlug(slug, ['id']);
+ 
+    const {id} = page[0];
+
+    const images = await getImagesLink(id);
+
+    return images;
+  } catch (error) {
+    console.error('Error in fetchImagesInPageBySlug:', error);
+    throw error; // Propagate the error to the caller
+  }
+}
+
+configure({ BASE_URL: `https://cbgranollers.cat` });
+
+// fetchImagesInPageBySlug(`equips-masculins-temporada-21-22`)
+
+fetchImagesInPageBySlug(`equips-masculins-temporada-22-23`);
+
 
 
 

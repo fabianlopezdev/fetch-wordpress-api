@@ -1,5 +1,5 @@
 import type { Media, Page, Post, PostParams } from './types';
-import { fetchData, fetchPageBySlug } from './index';
+import { configure, fetchData, fetchPageBySlug } from './index';
 
 /**
  * Builds an object containing endpoint parameters based on the provided fields and quantity.
@@ -120,4 +120,23 @@ export async function getImageLink(featured_media: number) {
   }
 }
 
+// Remove the import statement for PostParams since it is already imported in another file
+// import { PostParams } from './types';
+
+export async function getImagesLink(id: number) {
+  try {
+    const images = await fetchData<Media>(
+      `${'media'}`,
+      queryBuilder({ parent: id } as PostParams)
+    );
+
+    
+    const imageLinks = images.map((image) => image.source_url);
+    
+    return imageLinks;
+  } catch (error) {
+    console.error('Error in getArrOfImagesFromPage:', error);
+    throw error; // Propagate the error to the caller
+  }
+}
 
