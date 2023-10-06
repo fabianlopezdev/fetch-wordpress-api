@@ -336,7 +336,7 @@ export async function fetchImagesInPageBySlug(slug: string) {
     const {id} = page[0];
 
     const images = await getImagesLink(id);
-    console.log('images', images)
+
     return images;
   } catch (error) {
     console.error('Error in fetchImagesInPageBySlug:', error);
