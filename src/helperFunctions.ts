@@ -94,6 +94,7 @@ export async function addImagesToPost(data: Post[] | Page[]) {
        try {
          const imageLink = await getImageLink(post.featured_media);
          post = { ...post, image: imageLink };
+
          return post;
        } catch (error) {
          console.error('Error in addImageToPost:', error);
@@ -111,9 +112,15 @@ export async function getImageLink(featured_media: number) {
       `${'media'}/${featured_media}`
     );
 
-    const imageLink = imageMetaInfo[0].media_details.sizes.full.source_url;
+      const imageUrl = imageMetaInfo[0].media_details.sizes.full.source_url;
+      const imageTitle = imageMetaInfo[0].title.rendered;
+      const imageAlt = imageMetaInfo[0].alt_text;
 
-    return imageLink;
+      return {
+        url: imageUrl,
+        title: imageTitle,
+        alt: imageAlt,
+      };
   } catch (error) {
     console.error('Error in getImageLink:', error);
     throw error; // Propagate the error to the caller
@@ -132,13 +139,19 @@ export async function getImagesLink(id: number) {
     );
 
     
-    const imageLinks = images.map((image) => image.source_url);
-    
-    return imageLinks;
+    const imageDetails = images.map((image) => ({
+      url: image.source_url,
+      title: image.title.rendered, // This gets the title of the image.
+      alt: image.alt_text, // This gets the alt text of the image.
+    }));
+
+    return imageDetails;
   } catch (error) {
     console.error('Error in getArrOfImagesFromPage:', error);
     throw error; // Propagate the error to the caller
   }
 }
+
+
 
 

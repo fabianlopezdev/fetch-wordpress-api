@@ -153,7 +153,7 @@ export type Post = {
   format: string;
   guid: string;
   id: { rendered: string; raw: string };
-  image: string; //Note that this is not returned by the Wordpress API, this is used in addImageToPost function in helperFunctions, to add the link of a Wordpress post in the post returned by the API.
+  image: { url: string; title: string; alt: string }; //Note that this is not returned by the Wordpress API, this is used in addImageToPost function in helperFunctions, to add the link of a Wordpress post in the post returned by the API.
   link: string | Url;
   meta: Record<string, string | number | boolean | any[] | Record<string, any>>;
   modified: string | Date;
@@ -202,7 +202,7 @@ export type Page = {
     rendered: string;
   };
   id: number;
-  image: string; //Note that this is not returned by the Wordpress API, this is used in addImageToPost function in helperFunctions, to add the link of a Wordpress post in the post returned by the API.
+  image: { url: string; title: string; alt: string }; //Note that this is not returned by the Wordpress API, this is used in addImageToPost function in helperFunctions, to add the link of a Wordpress post in the post returned by the API.
   link: string;
   menu_order: number;
   meta: Record<string, any>;
@@ -262,6 +262,5 @@ export type Media = {
   };
   type: 'page';
 };
-
 
 
