@@ -78,11 +78,18 @@ export async function fetchData<T>(
      let fetchImages = false;
 
      // Set fetchImages to true if per_page is the only query parameter
-     if ((query && query.has('per_page') && [...query.keys()].length === 1 || query && [query.keys()].length > 1 && query.has('image') )) {
-       fetchImages = true;
-     }
-
-    if ((endpoint === 'posts' || endpoint === 'pages') && fetchImages) {
+    if (
+      (query && query.has('per_page') && [...query.keys()].length === 1) ||
+      (query && [...query.keys()].length > 1 && query.has('image')) ||
+      (query && query.has('categories') && [...query.keys()].length === 1)
+    ) {
+      fetchImages = true;
+    }
+    
+    if (
+      (endpoint === 'posts' || endpoint === 'pages' || endpoint === 'categories') &&
+      fetchImages
+    ) {
       const dataWithImages = await addImagesToPost(data);
       return dataWithImages as any;
     }
@@ -154,7 +161,6 @@ export async function fetchPostsInCategory(
 
     const data = await fetchData<Post>('posts', queryBuilder(endpointParams));
     const posts = await detectRedirects(data);
-
     return posts;
   } catch (error) {
     console.error('Error in fetchPostsInCategory:', error);
@@ -343,5 +349,4 @@ export async function fetchImagesInPageBySlug(slug: string) {
     throw error; // Propagate the error to the caller
   }
 }
-
 

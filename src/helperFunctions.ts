@@ -32,7 +32,6 @@ export function endpointParamsBuilder(
 export function queryBuilder(endpointParams: PostParams) {
   // create an empty URLSearchParams object
   const query = new URLSearchParams();
-
   // loop through the endpointParams object and append each key-value pair to the query
   for (const [key, value] of Object.entries(endpointParams)) {
     query.append(key, value as string);
@@ -151,6 +150,7 @@ export async function getImagesLink(id: number) {
     throw error; // Propagate the error to the caller
   }
 }
+
 
 
 
