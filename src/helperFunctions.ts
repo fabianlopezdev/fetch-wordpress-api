@@ -67,7 +67,7 @@ export async function detectRedirects(posts: Post[]): Promise<Post[]> {
               ...redirectedPost[0],
               categories: post.categories,
               image: post.image,
-              title: {rendered: post.title.rendered},
+              title: { rendered: post.title.rendered },
             };
           }
 
@@ -85,24 +85,23 @@ export async function detectRedirects(posts: Post[]): Promise<Post[]> {
   return newPosts.flat() as Post[];
 }
 
-export async function addImagesToPost(data: Post[] | Page[]) { 
-
+export async function addImagesToPost(data: Post[] | Page[]) {
   if (data[0]?.image || data[0]?.featured_media === 0) return data;
-   const postsWithImages = await Promise.all(
-     data.map(async (post: Post | Page) => {
-       try {
-         const imageLink = await getImageLink(post.featured_media);
-         post = { ...post, image: imageLink };
+  const postsWithImages = await Promise.all(
+    data.map(async (post: Post | Page) => {
+      try {
+        const imageLink = await getImageLink(post.featured_media);
+        post = { ...post, image: imageLink };
 
-         return post;
-       } catch (error) {
-         console.error('Error in addImageToPost:', error);
-         return post;
-       }
-     })
-   );
+        return post;
+      } catch (error) {
+        console.error('Error in addImageToPost:', error);
+        return post;
+      }
+    })
+  );
 
-   return postsWithImages;
+  return postsWithImages;
 }
 
 export async function getImageLink(featured_media: number) {
@@ -111,15 +110,31 @@ export async function getImageLink(featured_media: number) {
       `${'media'}/${featured_media}`
     );
 
-      const imageUrl = imageMetaInfo[0].media_details.sizes.full.source_url;
-      const imageTitle = imageMetaInfo[0].title.rendered;
-      const imageAlt = imageMetaInfo[0].alt_text;
+    // Check if imageMetaInfo is defined and has at least one element
+    if (imageMetaInfo && imageMetaInfo[0]) {
+      const mediaDetails = imageMetaInfo[0].media_details;
+      const title = imageMetaInfo[0].title;
 
-      return {
-        url: imageUrl,
-        title: imageTitle,
-        alt: imageAlt,
-      };
+      // Further check if mediaDetails is defined and has a sizes property
+      if (mediaDetails && mediaDetails.sizes) {
+        const fullSize = mediaDetails.sizes.full;
+
+        // Further check if fullSize is defined and has a source_url property
+        if (fullSize && fullSize.source_url) {
+          const imageUrl = fullSize.source_url;
+          const imageTitle = title ? title.rendered : '';
+          const imageAlt = imageMetaInfo[0].alt_text || '';
+
+          return {
+            url: imageUrl,
+            title: imageTitle,
+            alt: imageAlt,
+          };
+        }
+      }
+    }
+
+    throw new Error('Required properties not found');
   } catch (error) {
     console.error('Error in getImageLink:', error);
     throw error; // Propagate the error to the caller
@@ -131,13 +146,14 @@ export async function getImageLink(featured_media: number) {
 
 export async function getImagesLink(id: number) {
   try {
-
     const images = await fetchData<Media>(
       `${'media'}`,
-      queryBuilder({ parent: id, per_page: 100 } as { parent: number; per_page: number })
+      queryBuilder({ parent: id, per_page: 100 } as {
+        parent: number;
+        per_page: number;
+      })
     );
 
-    
     const imageDetails = images.map((image) => ({
       url: image.source_url,
       title: image.title.rendered, // This gets the title of the image.
@@ -150,8 +166,4 @@ export async function getImagesLink(id: number) {
     throw error; // Propagate the error to the caller
   }
 }
-
-
-
-
 
