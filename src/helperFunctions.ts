@@ -110,36 +110,66 @@ export async function getImageLink(featured_media: number) {
       `${'media'}/${featured_media}`
     );
 
-    // Check if imageMetaInfo is defined and has at least one element
-    if (imageMetaInfo && imageMetaInfo[0]) {
-      const mediaDetails = imageMetaInfo[0].media_details;
-      const title = imageMetaInfo[0].title;
+    // Default return object in case anything is missing
+    const defaultResponse = {
+      id: null,
+      url: '',
+      title: '',
+      alt: '',
+      description: '',
+      caption: '',
+      // ... add any other properties you want to default to here
+    };
 
-      // Further check if mediaDetails is defined and has a sizes property
-      if (mediaDetails && mediaDetails.sizes) {
-        const fullSize = mediaDetails.sizes.full;
-
-        // Further check if fullSize is defined and has a source_url property
-        if (fullSize && fullSize.source_url) {
-          const imageUrl = fullSize.source_url;
-          const imageTitle = title ? title.rendered : '';
-          const imageAlt = imageMetaInfo[0].alt_text || '';
-
-          return {
-            url: imageUrl,
-            title: imageTitle,
-            alt: imageAlt,
-          };
-        }
-      }
+    if (!imageMetaInfo || !imageMetaInfo[0]) {
+      return defaultResponse;
     }
 
-    throw new Error('Required properties not found');
+    const mediaItem = imageMetaInfo[0];
+    const mediaDetails = mediaItem.media_details;
+    const title = mediaItem.title;
+    const description = mediaItem.description
+      ? mediaItem.description.rendered
+      : '';
+    const caption = mediaItem.caption ? mediaItem.caption.rendered : '';
+    const imageId = mediaItem.id; // Extracting the image ID
+
+    if (!mediaDetails || !mediaDetails.sizes) {
+      return defaultResponse;
+    }
+
+    const fullSize = mediaDetails.sizes.full;
+
+    if (!fullSize || !fullSize.source_url) {
+      return defaultResponse;
+    }
+
+    const imageUrl = fullSize.source_url;
+    const imageTitle = title ? title.rendered : '';
+    const imageAlt = mediaItem.alt_text || '';
+
+    return {
+      id: imageId,
+      url: imageUrl,
+      title: imageTitle,
+      alt: imageAlt,
+      caption: removeParagraphTags(caption),
+      // ... extract other properties from mediaItem here
+    };
   } catch (error) {
     console.error('Error in getImageLink:', error);
-    throw error; // Propagate the error to the caller
+    return {
+      id: null,
+      url: '',
+      title: 'Error retrieving image',
+      alt: 'Error retrieving image',
+      description: 'Error retrieving image description',
+      caption: 'Error retrieving image caption',
+      // ... add any other error default properties here
+    };
   }
 }
+
 
 // Remove the import statement for PostParams since it is already imported in another file
 // import { PostParams } from './types';
@@ -155,9 +185,11 @@ export async function getImagesLink(id: number) {
     );
 
     const imageDetails = images.map((image) => ({
+      id: image.id,
       url: image.source_url,
-      title: image.title.rendered, // This gets the title of the image.
-      alt: image.alt_text, // This gets the alt text of the image.
+      title: image.title.rendered, 
+      alt: image.alt_text, 
+      caption: removeParagraphTags(image.caption.rendered),
     }));
 
     return imageDetails;
@@ -165,5 +197,14 @@ export async function getImagesLink(id: number) {
     console.error('Error in getArrOfImagesFromPage:', error);
     throw error; // Propagate the error to the caller
   }
+}
+
+
+function removeParagraphTags(string: string) {
+  // Remove the <p> and </p> tags and newlines
+  let cleanedString = string.replace(/<\/?p[^>]*>/g, '').replace(/\n/g, '');
+
+  // Trim spaces at the beginning and end
+  return cleanedString.trim();
 }
 
