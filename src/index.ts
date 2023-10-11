@@ -162,7 +162,6 @@ export async function fetchPostsInCategory(
     const data = await fetchData<Post>('posts', queryBuilder(endpointParams));
     const posts = await detectRedirects(data);
 
-    console.log('posts', posts)
     return posts;
   } catch (error) {
     console.error('Error in fetchPostsInCategory:', error);
@@ -344,7 +343,6 @@ export async function fetchImagesInPageBySlug(slug: string) {
     const {id} = page[0];
 
     const images = await getImagesLink(id);
-    console.log('images', images);
     return images;
   } catch (error) {
     console.error('Error in fetchImagesInPageBySlug:', error);
