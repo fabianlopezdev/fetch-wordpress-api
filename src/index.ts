@@ -81,7 +81,11 @@ export async function fetchData<T>(
     if (
       (query && query.has('per_page') && [...query.keys()].length === 1) ||
       (query && [...query.keys()].length > 1 && query.has('image')) ||
-      (query && query.has('categories') && [...query.keys()].length === 1)
+      (query && query.has('categories') && [...query.keys()].length === 1) ||
+      (query &&
+        query.has('per_page') &&
+        query.has('categories') &&
+        [...query.keys()].length === 2)
     ) {
       fetchImages = true;
     }
@@ -161,7 +165,7 @@ export async function fetchPostsInCategory(
 
     const data = await fetchData<Post>('posts', queryBuilder(endpointParams));
     const posts = await detectRedirects(data);
-
+    console.log('posts', posts)
     return posts;
   } catch (error) {
     console.error('Error in fetchPostsInCategory:', error);
@@ -350,3 +354,8 @@ export async function fetchImagesInPageBySlug(slug: string) {
   }
 }
 
+
+
+configure({ BASE_URL: 'https://cbgranollers.cat/' });
+
+fetchPostsInCategory(19,[],1)
