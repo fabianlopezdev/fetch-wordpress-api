@@ -75,30 +75,12 @@ export async function fetchData<T>(
 
     const data = await res.json();
     // Determine whether to fetch images based on query
-     let fetchImages = false;
 
-     // Set fetchImages to true if per_page is the only query parameter
-    if (
-      (query && query.has('per_page') && [...query.keys()].length === 1) ||
-      (query && [...query.keys()].length > 1 && query.has('image')) ||
-      (query && query.has('categories') && [...query.keys()].length === 1) ||
-      (query &&
-        query.has('per_page') &&
-        query.has('categories') &&
-        [...query.keys()].length === 2)
-    ) {
-      fetchImages = true;
-    }
-    
-    if (
-      (endpoint === 'posts' || endpoint === 'pages' || endpoint === 'categories') &&
-      fetchImages
-    ) {
-      const dataWithImages = await addImagesToPost(data);
-      return dataWithImages as any;
-    }
+    if (endpoint.includes('media') || endpoint.includes('categories'))
+      return Array.isArray(data) ? data : [data];
 
-    return Array.isArray(data) ? data : [data];
+    const dataWithImages = await addImagesToPost(data);
+    return dataWithImages as any;
   } catch (error) {
     console.error('Error in fetchData:', error);
     throw error; // Propagate the error to the caller
@@ -117,11 +99,11 @@ export async function fetchData<T>(
 export async function fetchPosts(
   quantity?: number,
   postFields?: PostFields[]
-  ): Promise<Post[]> {
-    try {
-      if (typeof postFields === 'undefined' && !quantity) {
-        const allPosts = await fetchData<Post>('posts');
-        
+): Promise<Post[]> {
+  try {
+    if (typeof postFields === 'undefined' && !quantity) {
+      const allPosts = await fetchData<Post>('posts');
+
       return allPosts;
     } else if (typeof postFields !== 'undefined' && quantity === -1) {
       const endpointParams = endpointParamsBuilder(postFields);
@@ -137,7 +119,7 @@ export async function fetchPosts(
 
     const data = await fetchData<Post>('posts', queryBuilder(endpointParams));
     const posts = await detectRedirects(data);
-  
+
     return posts;
   } catch (error) {
     console.error('Error in fetchPosts:', error);
@@ -165,7 +147,7 @@ export async function fetchPostsInCategory(
 
     const data = await fetchData<Post>('posts', queryBuilder(endpointParams));
     const posts = await detectRedirects(data);
-    console.log('posts', posts)
+
     return posts;
   } catch (error) {
     console.error('Error in fetchPostsInCategory:', error);
@@ -190,7 +172,7 @@ export async function fetchPostBySlug(
     endpointParams.slug = slug;
 
     const post = await fetchData<Post>('posts', queryBuilder(endpointParams));
-    
+
     return post;
   } catch (error) {
     console.error('Error in fetchPostBySlug:', error);
@@ -309,7 +291,7 @@ export async function fetchPageBySlug(
     endpointParams.slug = slug;
 
     const page = await fetchData<Page>('pages', queryBuilder(endpointParams));
- 
+
     return page;
   } catch (error) {
     console.error('Error in fetchPageBySlug:', error);
@@ -344,7 +326,7 @@ export async function fetchPageById(
 export async function fetchImagesInPageBySlug(slug: string) {
   try {
     const page = await fetchPageBySlug(slug);
-    const {id} = page[0];
+    const { id } = page[0];
 
     const images = await getImagesLink(id);
     return images;
@@ -354,8 +336,5 @@ export async function fetchImagesInPageBySlug(slug: string) {
   }
 }
 
-
-
 configure({ BASE_URL: 'https://cbgranollers.cat/' });
 
-fetchPostsInCategory(19,[],1)

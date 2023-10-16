@@ -86,10 +86,11 @@ export async function detectRedirects(posts: Post[]): Promise<Post[]> {
 }
 
 export async function addImagesToPost(data: Post[] | Page[]) {
-  if (data[0]?.image || data[0]?.featured_media === 0) return data;
   const postsWithImages = await Promise.all(
     data.map(async (post: Post | Page) => {
       try {
+        if (post?.image || post?.featured_media === 0) return post;
+        console.log('featured_media', post.featured_media)
         const imageLink = await getImageLink(post.featured_media);
         post = { ...post, image: imageLink };
 
@@ -106,9 +107,12 @@ export async function addImagesToPost(data: Post[] | Page[]) {
 
 export async function getImageLink(featured_media: number) {
   try {
+    console.log('I got it')
     const imageMetaInfo = await fetchData<Media>(
       `${'media'}/${featured_media}`
     );
+
+    console.log('imageMetaInfo', imageMetaInfo)
 
     // Default return object in case anything is missing
     const defaultResponse = {
