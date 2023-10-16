@@ -76,7 +76,8 @@ export async function fetchData<T>(
     const data = await res.json();
     // Determine whether to fetch images based on query
 
-    if (endpoint.includes('media') || endpoint.includes('categories'))
+    const fieldValue = query?.get('_fields');
+    if (endpoint.includes('media') || endpoint.includes('categories') || !fieldValue?.includes('image'))
       return Array.isArray(data) ? data : [data];
 
     const dataWithImages = await addImagesToPost(data);
@@ -290,8 +291,8 @@ export async function fetchPageBySlug(
 
     endpointParams.slug = slug;
 
-    const page = await fetchData<Page>('pages', queryBuilder(endpointParams));
 
+    const page = await fetchData<Page>('pages', queryBuilder(endpointParams));
     return page;
   } catch (error) {
     console.error('Error in fetchPageBySlug:', error);
@@ -335,5 +336,6 @@ export async function fetchImagesInPageBySlug(slug: string) {
     throw error; // Propagate the error to the caller
   }
 }
+
 
 

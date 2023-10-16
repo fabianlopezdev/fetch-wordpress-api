@@ -89,7 +89,7 @@ export async function addImagesToPost(data: Post[] | Page[]) {
   const postsWithImages = await Promise.all(
     data.map(async (post: Post | Page) => {
       try {
-        if (post?.image || post?.featured_media === 0) return post;
+        if (post?.image || !post?.featured_media) return post;
         const imageLink = await getImageLink(post.featured_media);
         post = { ...post, image: imageLink };
 

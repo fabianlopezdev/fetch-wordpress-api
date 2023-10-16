@@ -56,6 +56,7 @@ export type PageFields =
   | 'generated_slug'
   | 'guid'
   | 'id'
+  | 'image'
   | 'link'
   | 'menu_order'
   | 'meta'
