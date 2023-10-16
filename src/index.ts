@@ -336,5 +336,4 @@ export async function fetchImagesInPageBySlug(slug: string) {
   }
 }
 
-configure({ BASE_URL: 'https://cbgranollers.cat/' });
 

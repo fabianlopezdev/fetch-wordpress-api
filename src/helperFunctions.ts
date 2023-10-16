@@ -90,7 +90,6 @@ export async function addImagesToPost(data: Post[] | Page[]) {
     data.map(async (post: Post | Page) => {
       try {
         if (post?.image || post?.featured_media === 0) return post;
-        console.log('featured_media', post.featured_media)
         const imageLink = await getImageLink(post.featured_media);
         post = { ...post, image: imageLink };
 
@@ -107,12 +106,9 @@ export async function addImagesToPost(data: Post[] | Page[]) {
 
 export async function getImageLink(featured_media: number) {
   try {
-    console.log('I got it')
     const imageMetaInfo = await fetchData<Media>(
       `${'media'}/${featured_media}`
     );
-
-    console.log('imageMetaInfo', imageMetaInfo)
 
     // Default return object in case anything is missing
     const defaultResponse = {
@@ -174,7 +170,6 @@ export async function getImageLink(featured_media: number) {
   }
 }
 
-
 // Remove the import statement for PostParams since it is already imported in another file
 // import { PostParams } from './types';
 
@@ -191,8 +186,8 @@ export async function getImagesLink(id: number) {
     const imageDetails = images.map((image) => ({
       id: image.id,
       url: image.source_url,
-      title: image.title.rendered, 
-      alt: image.alt_text, 
+      title: image.title.rendered,
+      alt: image.alt_text,
       caption: removeParagraphTags(image.caption.rendered),
     }));
 
@@ -202,7 +197,6 @@ export async function getImagesLink(id: number) {
     throw error; // Propagate the error to the caller
   }
 }
-
 
 function removeParagraphTags(string: string) {
   // Remove the <p> and </p> tags and newlines
