@@ -288,6 +288,7 @@ export async function fetchPages(
  * @returns {Promise<Page[]>} The fetched page as a Page object in an array.
  * @throws {Error} If the fetch request fails.
  */
+
 export async function fetchPageBySlug(
   slug: string,
   pageFields?: PageFields[]
@@ -298,7 +299,7 @@ export async function fetchPageBySlug(
     endpointParams.slug = slug;
 
     const page = await fetchData<Page>('pages', queryBuilder(endpointParams));
-
+    if (page.length === 0) throw new Error('Page not found');
     return page;
   } catch (error) {
     console.error('Error in fetchPageBySlug:', error);
@@ -330,18 +331,25 @@ export async function fetchPageById(
   }
 }
 
+function getBaseUrl(url: string): string {
+  // Remove dimension and file extension (e.g., "-150x150.png") from URL
+  return url.replace(/-\d+x\d+\.\w+$/, '.');
+}
+
 export async function fetchImagesInPageBySlug(slug: string) {
   try {
     const page = await fetchPageBySlug(slug);
+    if (page.length === 0) throw new Error('Page not found');
+   
     const { id, content } = page[0];
 
     // Extract image URLs from the page content
     const imageUrls = extractImageUrlsFromContent(content.rendered);
 
-    // Create a mapping of image URLs to their index in the order they appear
+    // Create a mapping of base image URLs to their index in the order they appear
     const imageUrlOrderMapping: { [url: string]: number } = {};
     imageUrls.forEach((url, index) => {
-      imageUrlOrderMapping[url] = index;
+      imageUrlOrderMapping[getBaseUrl(url)] = index;
     });
 
     // Fetch all media associated with the page
@@ -349,20 +357,23 @@ export async function fetchImagesInPageBySlug(slug: string) {
 
     // Filter media to keep only the ones present in the page content
     const filteredImages = allMedia.filter((media) =>
-      imageUrls.includes(media.url)
+      Object.keys(imageUrlOrderMapping).some((base) => media.url.includes(base))
     );
 
     // Sort the images based on their order in the gallery
     filteredImages.sort(
-      (a, b) => imageUrlOrderMapping[a.url] - imageUrlOrderMapping[b.url]
+      (a, b) =>
+        imageUrlOrderMapping[getBaseUrl(a.url)] -
+        imageUrlOrderMapping[getBaseUrl(b.url)]
     );
-    
+
     return filteredImages;
   } catch (error) {
     console.error('Error in fetchImagesInPageBySlug:', error);
     throw error;
   }
 }
+
 
 
 function extractImageUrlsFromContent(content: string): string[] {
@@ -398,6 +409,7 @@ async function fetchImagesByURLs(urls: string[]): Promise<ExtendedMedia[]> {
   const images = await Promise.all(urls.map(fetchImageByURL));
   return images.filter((image): image is ExtendedMedia => image !== null);
 }
+
 
 
 
