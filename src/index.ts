@@ -436,7 +436,6 @@ export async function fetchImagesInPageBySlug(slug: string) {
       })
     );
   
-      console.log('allMedia', allMedia)
     return allMedia;
   } catch (error) {
     console.error('Error in fetchImagesInPageBySlug:', error);
@@ -491,6 +490,3 @@ async function fetchImageByUrl(url: string) {
 
 
 
-configure({ BASE_URL: 'https://cbgranollers.cat/' });
-
-fetchImagesInPageBySlug('equips')
