@@ -70,24 +70,14 @@ export async function fetchData<T>(
     | PagesWithId
     | MediaWithId
     | CustomEndpoint,
-  query?: URLSearchParams,
-  timeout = 5000 // Set default timeout to 5 seconds
+  query?: URLSearchParams
 ): Promise<T[]> {
-  const controller = new AbortController();
-  const signal = controller.signal;
-
-  const url = new URL(`${BASE_URL}${WP_API}/${endpoint}`);
-
-  if (query) url.search = query.toString();
-
-  // Set a timeout to abort the request
-  const timeoutId = setTimeout(() => controller.abort(), timeout);
-
   try {
-    const res = await fetch(url, { signal });
+    const url = new URL(`${BASE_URL}${WP_API}/${endpoint}`);
 
-    // Clear the timeout if the request completes successfully
-    clearTimeout(timeoutId);
+    if (query) url.search = query.toString();
+
+    const res = await fetch(url);
 
     if (!res.ok) {
       console.error('Response object:', res);
@@ -106,46 +96,10 @@ export async function fetchData<T>(
     } else {
       return Array.isArray(data) ? data : [data];
     }
-  } catch (error: any) {
-    // Clear the timeout if there's an error
-    clearTimeout(timeoutId);
-
-     if (error instanceof Error && error.name === 'AbortError') {
-       console.error('Request timed out:', error.message);
-     } else {
-       console.error('Error in fetchData:', error.message);
-     }
+  } catch (error) {
+    console.error('Error in fetchData:', error);
     throw error; // Propagate the error to the caller
   }
-}
-
-
-export async function fetchDataWithRetries<T>(
-  endpoint:
-    | Endpoints
-    | PostsWithId
-    | PagesWithId
-    | MediaWithId
-    | CustomEndpoint,
-  query?: URLSearchParams,
-  maxRetries = 3
-): Promise<T[]> {
-  for (let attempt = 0; attempt < maxRetries; attempt++) {
-    try {
-      return await fetchData(endpoint, query);
-    } catch (error) {
-      console.error(`Fetch attempt ${attempt + 1} failed:`, error);
-      if (attempt < maxRetries - 1) {
-        console.log('Retrying...');
-      } else {
-        console.error('Max retries reached. Throwing error.');
-        throw error;
-      }
-    }
-  }
-  // This will never actually be reached due to the throw statement above,
-  // but it satisfies TypeScript's type checking.
-  return Promise.reject(new Error('Max retries reached'));
 }
 
 
@@ -419,29 +373,39 @@ export async function fetchImagesInPageBySlug(slug: string) {
     const page = await fetchPageBySlug(slug);
     if (page.length === 0) throw new Error('Page not found');
 
-    const { content } = page[0];
+    const { id, content } = page[0];
     const imageUrls = extractImageUrlsFromContent(content.rendered);
 
-    // Fetch all media information by URLs
-    const allMedia = await Promise.all(
-      imageUrls.map(async (url, i) => {
-        const image = await fetchImageByUrl(url) as CustomImage;
-        return {
-          id: image.ID,
-          url: image.url,
-          title: image.title,
-          alt: image.alt,
-          caption: image.caption,
-        }
-      })
+    // Fetch all media
+    const allMedia = await fetchAllImages();
+
+    // Filter media to keep only the ones present in the page content
+    const filteredImages = allMedia.filter((media) => {
+      const isIncluded = imageUrls.includes(media.url);
+      return isIncluded;
+    });
+
+    // Create a mapping of base image URLs to their index in the order they appear
+    const imageUrlOrderMapping: { [url: string]: number } = {};
+    imageUrls.forEach((url, index) => {
+      const baseUrl = getBaseUrl(url);
+      imageUrlOrderMapping[baseUrl] = index;
+    });
+
+    // Sort the images based on their order in the gallery
+    filteredImages.sort(
+      (a, b) =>
+        imageUrlOrderMapping[getBaseUrl(a.url)] -
+        imageUrlOrderMapping[getBaseUrl(b.url)]
     );
-  
-    return allMedia;
+
+    return filteredImages;
   } catch (error) {
     console.error('Error in fetchImagesInPageBySlug:', error);
     throw error;
   }
 }
+
 
 function extractImageUrlsFromContent(content: string): string[] {
   const urls: string[] = [];
@@ -478,7 +442,7 @@ async function fetchImageByUrl(url: string) {
     const query = new URLSearchParams({ url }); // Construct the query parameters
 
     // Use your fetchData function to make the request
-    const image = await fetchDataWithRetries(endpoint, query);
+    const image = await fetchData(endpoint, query);
 
     // Since fetchData returns an array, take the first element of the array as the result
     return image[0];
@@ -487,6 +451,4 @@ async function fetchImageByUrl(url: string) {
     throw error;
   }
 }
-
-
 
