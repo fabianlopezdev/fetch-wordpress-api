@@ -275,3 +275,14 @@ export interface ExtendedMedia extends Media {
   };
 
 }
+
+
+export type CustomEndpoint = 'media-by-url';
+
+export type CustomImage = {
+  ID: number;
+  url: string;
+  title: string;
+  alt: string;
+  caption: string;
+}

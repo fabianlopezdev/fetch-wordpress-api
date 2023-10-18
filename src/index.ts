@@ -9,6 +9,7 @@ export type {
   PostParams,
   PostsWithId,
   Media,
+  CustomEndpoint,
 } from './types';
 
 // These types are enums, they can be also used as values
@@ -41,6 +42,8 @@ import type {
   MediaWithId,
   Media,
   ExtendedMedia,
+  CustomEndpoint,
+  CustomImage,
 } from './types';
 
 // Variables Declarations
@@ -61,7 +64,12 @@ export function configure(options: ConfigureOptions) {
  * @throws {Error} If the fetch request fails.
  */
 export async function fetchData<T>(
-  endpoint: Endpoints | PostsWithId | PagesWithId | MediaWithId,
+  endpoint:
+    | Endpoints
+    | PostsWithId
+    | PagesWithId
+    | MediaWithId
+    | CustomEndpoint,
   query?: URLSearchParams
 ): Promise<T[]> {
   try {
@@ -332,49 +340,61 @@ export async function fetchPageById(
 }
 
 function getBaseUrl(url: string): string {
-  // Remove dimension and file extension (e.g., "-150x150.png") from URL
-  return url.replace(/-\d+x\d+\.\w+$/, '.');
+  // Remove dimension, file extension and trailing '.' (e.g., "-150x150.png") from URL
+  return url.replace(/-\d+x\d+(\.\w+)?$/, '').replace(/\.\w+$/, '');
+}
+export async function fetchAllImages() {
+  try {
+    // Assumes the maximum number of images per page is 100, you might need to handle pagination if there are more images.
+    const images = await fetchData<Media>(
+      `${'media'}`,
+      queryBuilder({ per_page: 100 } as { per_page: number })
+    );
+
+    const imageDetails = images.map((image) => ({
+      id: image.id,
+      url: image.source_url,
+      title: image.title.rendered,
+      alt: image.alt_text,
+      caption: removeParagraphTags(image.caption.rendered),
+    }));
+
+    return imageDetails;
+  } catch (error) {
+    console.error('Error in fetchAllImages:', error);
+    throw error;
+  }
 }
 
 export async function fetchImagesInPageBySlug(slug: string) {
   try {
     const page = await fetchPageBySlug(slug);
     if (page.length === 0) throw new Error('Page not found');
-   
-    const { id, content } = page[0];
 
-    // Extract image URLs from the page content
+    const { content } = page[0];
     const imageUrls = extractImageUrlsFromContent(content.rendered);
 
-    // Create a mapping of base image URLs to their index in the order they appear
-    const imageUrlOrderMapping: { [url: string]: number } = {};
-    imageUrls.forEach((url, index) => {
-      imageUrlOrderMapping[getBaseUrl(url)] = index;
-    });
-
-    // Fetch all media associated with the page
-    const allMedia = await getImagesLink(id);
-
-    // Filter media to keep only the ones present in the page content
-    const filteredImages = allMedia.filter((media) =>
-      Object.keys(imageUrlOrderMapping).some((base) => media.url.includes(base))
+    // Fetch all media information by URLs
+    const allMedia = await Promise.all(
+      imageUrls.map(async (url, i) => {
+        const image = await fetchImageByUrl(url) as CustomImage;
+        return {
+          id: image.ID,
+          url: image.url,
+          title: image.title,
+          alt: image.alt,
+          caption: image.caption,
+        }
+      })
     );
+  
 
-    // Sort the images based on their order in the gallery
-    filteredImages.sort(
-      (a, b) =>
-        imageUrlOrderMapping[getBaseUrl(a.url)] -
-        imageUrlOrderMapping[getBaseUrl(b.url)]
-    );
-
-    return filteredImages;
+    return allMedia;
   } catch (error) {
     console.error('Error in fetchImagesInPageBySlug:', error);
     throw error;
   }
 }
-
-
 
 function extractImageUrlsFromContent(content: string): string[] {
   const urls: string[] = [];
@@ -387,7 +407,6 @@ function extractImageUrlsFromContent(content: string): string[] {
 
   return urls;
 }
-
 
 async function fetchImageByURL(url: string): Promise<ExtendedMedia | null> {
   try {
@@ -405,12 +424,19 @@ async function fetchImageByURL(url: string): Promise<ExtendedMedia | null> {
   }
 }
 
-async function fetchImagesByURLs(urls: string[]): Promise<ExtendedMedia[]> {
-  const images = await Promise.all(urls.map(fetchImageByURL));
-  return images.filter((image): image is ExtendedMedia => image !== null);
+async function fetchImageByUrl(url: string) {
+  try {
+    // Assuming BASE_URL and WP_API are defined and set to the correct values
+    const endpoint = 'media-by-url'; // Use the route you defined for your custom endpoint
+    const query = new URLSearchParams({ url }); // Construct the query parameters
+
+    // Use your fetchData function to make the request
+    const image = await fetchData(endpoint, query);
+
+    // Since fetchData returns an array, take the first element of the array as the result
+    return image[0];
+  } catch (error) {
+    console.error('Error in fetchImageByUrl:', error);
+    throw error;
+  }
 }
-
-
-
-
-
