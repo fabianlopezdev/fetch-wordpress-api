@@ -372,19 +372,22 @@ export async function fetchImagesInPageBySlug(slug: string) {
   try {
     const page = await fetchPageBySlug(slug);
     if (page.length === 0) throw new Error('Page not found');
-
-    const { id, content } = page[0];
+    const { id ,content } = page[0];
     const imageUrls = extractImageUrlsFromContent(content.rendered);
-
     // Fetch all media
     const allMedia = await fetchAllImages();
-
     // Filter media to keep only the ones present in the page content
     const filteredImages = allMedia.filter((media) => {
-      const isIncluded = imageUrls.includes(media.url);
+      const isIncluded =
+        imageUrls.includes(decodeURIComponent(media.url)) ||
+        imageUrls.includes(encodeURIComponent(media.url));
       return isIncluded;
     });
 
+    if (filteredImages.length === 0) { 
+       const images = await getImagesLink(id);
+       return images;
+    }
     // Create a mapping of base image URLs to their index in the order they appear
     const imageUrlOrderMapping: { [url: string]: number } = {};
     imageUrls.forEach((url, index) => {
@@ -398,7 +401,7 @@ export async function fetchImagesInPageBySlug(slug: string) {
         imageUrlOrderMapping[getBaseUrl(a.url)] -
         imageUrlOrderMapping[getBaseUrl(b.url)]
     );
-
+  
     return filteredImages;
   } catch (error) {
     console.error('Error in fetchImagesInPageBySlug:', error);
@@ -451,4 +454,5 @@ async function fetchImageByUrl(url: string) {
     throw error;
   }
 }
+
 
