@@ -337,21 +337,33 @@ export async function fetchImagesInPageBySlug(slug: string) {
 
     // Extract image URLs from the page content
     const imageUrls = extractImageUrlsFromContent(content.rendered);
-    console.log('imageUrls', imageUrls);
+
+    // Create a mapping of image URLs to their index in the order they appear
+    const imageUrlOrderMapping: { [url: string]: number } = {};
+    imageUrls.forEach((url, index) => {
+      imageUrlOrderMapping[url] = index;
+    });
+
     // Fetch all media associated with the page
     const allMedia = await getImagesLink(id);
-    console.log('allMedia', allMedia)
+
     // Filter media to keep only the ones present in the page content
     const filteredImages = allMedia.filter((media) =>
       imageUrls.includes(media.url)
     );
-    console.log('filteredImages', filteredImages)
+
+    // Sort the images based on their order in the gallery
+    filteredImages.sort(
+      (a, b) => imageUrlOrderMapping[a.url] - imageUrlOrderMapping[b.url]
+    );
+    
     return filteredImages;
   } catch (error) {
     console.error('Error in fetchImagesInPageBySlug:', error);
     throw error;
   }
 }
+
 
 function extractImageUrlsFromContent(content: string): string[] {
   const urls: string[] = [];
@@ -386,5 +398,7 @@ async function fetchImagesByURLs(urls: string[]): Promise<ExtendedMedia[]> {
   const images = await Promise.all(urls.map(fetchImageByURL));
   return images.filter((image): image is ExtendedMedia => image !== null);
 }
+
+
 
 
