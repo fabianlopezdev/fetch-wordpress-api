@@ -70,14 +70,24 @@ export async function fetchData<T>(
     | PagesWithId
     | MediaWithId
     | CustomEndpoint,
-  query?: URLSearchParams
+  query?: URLSearchParams,
+  timeout = 5000 // Set default timeout to 5 seconds
 ): Promise<T[]> {
+  const controller = new AbortController();
+  const signal = controller.signal;
+
+  const url = new URL(`${BASE_URL}${WP_API}/${endpoint}`);
+
+  if (query) url.search = query.toString();
+
+  // Set a timeout to abort the request
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+
   try {
-    const url = new URL(`${BASE_URL}${WP_API}/${endpoint}`);
+    const res = await fetch(url, { signal });
 
-    if (query) url.search = query.toString();
-
-    const res = await fetch(url);
+    // Clear the timeout if the request completes successfully
+    clearTimeout(timeoutId);
 
     if (!res.ok) {
       console.error('Response object:', res);
@@ -96,11 +106,49 @@ export async function fetchData<T>(
     } else {
       return Array.isArray(data) ? data : [data];
     }
-  } catch (error) {
-    console.error('Error in fetchData:', error);
+  } catch (error: any) {
+    // Clear the timeout if there's an error
+    clearTimeout(timeoutId);
+
+     if (error instanceof Error && error.name === 'AbortError') {
+       console.error('Request timed out:', error.message);
+     } else {
+       console.error('Error in fetchData:', error.message);
+     }
     throw error; // Propagate the error to the caller
   }
 }
+
+
+export async function fetchDataWithRetries<T>(
+  endpoint:
+    | Endpoints
+    | PostsWithId
+    | PagesWithId
+    | MediaWithId
+    | CustomEndpoint,
+  query?: URLSearchParams,
+  maxRetries = 3
+): Promise<T[]> {
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      return await fetchData(endpoint, query);
+    } catch (error) {
+      console.error(`Fetch attempt ${attempt + 1} failed:`, error);
+      if (attempt < maxRetries - 1) {
+        console.log('Retrying...');
+      } else {
+        console.error('Max retries reached. Throwing error.');
+        throw error;
+      }
+    }
+  }
+  // This will never actually be reached due to the throw statement above,
+  // but it satisfies TypeScript's type checking.
+  return Promise.reject(new Error('Max retries reached'));
+}
+
+
 
 // #### POSTS ####
 
@@ -388,7 +436,7 @@ export async function fetchImagesInPageBySlug(slug: string) {
       })
     );
   
-
+      console.log('allMedia', allMedia)
     return allMedia;
   } catch (error) {
     console.error('Error in fetchImagesInPageBySlug:', error);
@@ -431,7 +479,7 @@ async function fetchImageByUrl(url: string) {
     const query = new URLSearchParams({ url }); // Construct the query parameters
 
     // Use your fetchData function to make the request
-    const image = await fetchData(endpoint, query);
+    const image = await fetchDataWithRetries(endpoint, query);
 
     // Since fetchData returns an array, take the first element of the array as the result
     return image[0];
@@ -440,3 +488,9 @@ async function fetchImageByUrl(url: string) {
     throw error;
   }
 }
+
+
+
+configure({ BASE_URL: 'https://cbgranollers.cat/' });
+
+fetchImagesInPageBySlug('equips')
