@@ -198,7 +198,7 @@ export async function getImagesLink(id: number) {
   }
 }
 
-function removeParagraphTags(string: string) {
+export function removeParagraphTags(string: string) {
   // Remove the <p> and </p> tags and newlines
   let cleanedString = string.replace(/<\/?p[^>]*>/g, '').replace(/\n/g, '');
 

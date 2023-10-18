@@ -265,3 +265,13 @@ export type Media = {
 };
 
 
+export interface ExtendedMedia extends Media {
+  source_url: string;
+  title: {
+    rendered: string;
+  };
+  caption: {
+    rendered: string;
+  };
+
+}

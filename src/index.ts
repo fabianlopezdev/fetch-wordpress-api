@@ -22,6 +22,7 @@ import {
   endpointParamsBuilder,
   getImagesLink,
   queryBuilder,
+  removeParagraphTags,
 } from './helperFunctions';
 
 // import TS types
@@ -38,6 +39,8 @@ import type {
   Category,
   Page,
   MediaWithId,
+  Media,
+  ExtendedMedia,
 } from './types';
 
 // Variables Declarations
@@ -330,13 +333,58 @@ export async function fetchPageById(
 export async function fetchImagesInPageBySlug(slug: string) {
   try {
     const page = await fetchPageBySlug(slug);
-    const { id } = page[0];
+    const { id, content } = page[0];
 
-    const images = await getImagesLink(id);
-    return images;
+    // Extract image URLs from the page content
+    const imageUrls = extractImageUrlsFromContent(content.rendered);
+    console.log('imageUrls', imageUrls);
+    // Fetch all media associated with the page
+    const allMedia = await getImagesLink(id);
+    console.log('allMedia', allMedia)
+    // Filter media to keep only the ones present in the page content
+    const filteredImages = allMedia.filter((media) =>
+      imageUrls.includes(media.url)
+    );
+    console.log('filteredImages', filteredImages)
+    return filteredImages;
   } catch (error) {
     console.error('Error in fetchImagesInPageBySlug:', error);
-    throw error; // Propagate the error to the caller
+    throw error;
   }
 }
+
+function extractImageUrlsFromContent(content: string): string[] {
+  const urls: string[] = [];
+  const imgTagRegex = /<img[^>]+src="(https:\/\/[^">]+)"/g;
+  let match;
+
+  while ((match = imgTagRegex.exec(content))) {
+    urls.push(match[1]);
+  }
+
+  return urls;
+}
+
+
+async function fetchImageByURL(url: string): Promise<ExtendedMedia | null> {
+  try {
+    const images = await fetchData<ExtendedMedia>(
+      'media',
+      new URLSearchParams({ url })
+    );
+    if (images.length > 0) {
+      return images[0];
+    }
+    return null;
+  } catch (error) {
+    console.error('Error in fetchImageByURL:', error);
+    return null;
+  }
+}
+
+async function fetchImagesByURLs(urls: string[]): Promise<ExtendedMedia[]> {
+  const images = await Promise.all(urls.map(fetchImageByURL));
+  return images.filter((image): image is ExtendedMedia => image !== null);
+}
+
 
