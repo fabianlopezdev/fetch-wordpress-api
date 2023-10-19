@@ -346,6 +346,28 @@ function getBaseUrl(url: string): string {
 
 let imageFetchPromise: Promise<any[] | null> | null = null;
 
+function extractUrl(caption: string, description: string) {
+  // Check if the caption contains "http"
+  if (/http/.test(caption)) {
+    return removeParagraphTags(caption);
+  } else {
+    // Look for an href attribute within a blockquote in the description
+    const match = description.match(
+      /<blockquote[^>]*>.*?href=["'](http[^"']+)["']/
+    );
+    if (match) {
+      // Extract the URL from the match
+      const url = match[1];
+      // Extract the homepage URL by finding the third slash
+      const homepage = url.slice(
+        0,
+        url.indexOf('/', url.indexOf('//') + 2) + 1
+      );
+      return homepage;
+    }
+  }
+  return ''; // Return an empty string if no URL is found
+}
 
 
 export async function fetchAllImages() {
@@ -360,13 +382,16 @@ export async function fetchAllImages() {
       `${'media'}`,
       queryBuilder({ per_page: 100 } as { per_page: number })
     ).then((images) => {
-      return images.map((image) => ({
+      return images.map((image) => {
+        if (image.id === 9073) {
+        }
+        return ({
         id: image.id,
         url: image.source_url,
         title: image.title.rendered,
         alt: image.alt_text,
-        caption: removeParagraphTags(image.caption.rendered),
-      }));
+        caption: extractUrl(image.caption.rendered, image.description.rendered),
+      })});
     });
 
     // Wait for the fetch to complete, then return the data
@@ -409,7 +434,6 @@ export async function fetchImagesInPageBySlug(slug: string) {
     if (filteredImages.length === 0) {
       return images;
     }
-
     return sortImagesByAppearanceOrder(filteredImages, imageUrls);
   } catch (error) {
     console.error('Error in fetchImagesInPageBySlug:', error);
@@ -449,11 +473,6 @@ function sortImagesByAppearanceOrder(
 
   return images;
 }
-
-
-
-
-
 
 
 
