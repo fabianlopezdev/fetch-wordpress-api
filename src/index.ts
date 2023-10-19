@@ -379,8 +379,8 @@ export async function fetchImagesInPageBySlug(slug: string) {
     // Filter media to keep only the ones present in the page content
     const filteredImages = allMedia.filter((media) => {
       const isIncluded =
-        imageUrls.includes(decodeURIComponent(media.url)) ||
-        imageUrls.includes(encodeURIComponent(media.url));
+        imageUrls.includes(media.url) ||
+        imageUrls.includes(media.url);
       return isIncluded;
     });
 
