@@ -414,7 +414,7 @@ export async function fetchImagesInPageBySlug(slug: string) {
   
     let filteredImages;
     if (imageUrls.length === images.length) {
-      console.log('here')
+      if (images.length === 1) return images;
       filteredImages = images.filter((image) => imageUrlSet.has(image.url));
       return sortImagesByAppearanceOrder(filteredImages, imageUrls);
     }
@@ -429,6 +429,8 @@ export async function fetchImagesInPageBySlug(slug: string) {
     if (filteredImages.length === 0) {
       return images;
     }
+
+
     return sortImagesByAppearanceOrder(filteredImages, imageUrls);
   } catch (error) {
     console.error('Error in fetchImagesInPageBySlug:', error);
@@ -452,7 +454,6 @@ function sortImagesByAppearanceOrder(
   images: any[],
   imageUrls: string[]
 ): any[] {
-  if (images.length === 1) return images;
   const imageUrlOrderMapping: { [url: string]: number } = {};
   imageUrls.forEach((url, index) => {
     const baseUrl = getBaseUrl(url);
