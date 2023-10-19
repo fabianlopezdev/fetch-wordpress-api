@@ -386,15 +386,20 @@ export async function fetchImagesInPageBySlug(slug: string) {
     const { id, content } = page[0];
     const imageUrls = extractImageUrlsFromContent(content.rendered);
     const imageUrlSet = new Set(imageUrls);
-    const images = await getImagesLink(id);
+
+    // Use Promise.all to fetch images and allMedia concurrently
+    const [images, allMedia] = await Promise.all([
+      getImagesLink(id),
+      fetchAllImages(),
+    ]);
+
     let filteredImages;
     if (imageUrls.length === images.length) {
       filteredImages = images.filter((image) => imageUrlSet.has(image.url));
       return sortImagesByAppearanceOrder(filteredImages, imageUrls);
     }
-    //IF IMAGES DON'T SHARE SAME PARENT PAGE
-    const allMedia = await fetchAllImages();
-    
+
+    // If images don't share the same parent page
     if (allMedia) {
       filteredImages = allMedia.filter((media) => imageUrlSet.has(media.url));
     } else {
@@ -402,7 +407,6 @@ export async function fetchImagesInPageBySlug(slug: string) {
     }
 
     if (filteredImages.length === 0) {
-      const images = await getImagesLink(id);
       return images;
     }
 
@@ -412,6 +416,7 @@ export async function fetchImagesInPageBySlug(slug: string) {
     throw error;
   }
 }
+
 
 function extractImageUrlsFromContent(content: string): string[] {
   const urls: string[] = [];
@@ -444,6 +449,7 @@ function sortImagesByAppearanceOrder(
 
   return images;
 }
+
 
 
 
