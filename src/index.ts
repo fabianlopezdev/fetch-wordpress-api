@@ -72,34 +72,36 @@ export async function fetchData<T>(
     | CustomEndpoint,
   query?: URLSearchParams
 ): Promise<T[]> {
-  const url = new URL(`https://cbgranollers.cat${WP_API}/${endpoint}`);
-  try {
+ const url = new URL(`https://cbgranollers.cat${WP_API}/${endpoint}`);
+ try {
+   if (query) url.search = query.toString();
+   const res = await fetchWithRetry(url);
+   if (!res.ok) {
+     console.error(
+       'Error in fetchData:',
+       `Response not OK. Status: ${res.status}, StatusText: ${res.statusText}`,
+       'URL:',
+       url.toString()
+     );
+     throw new Error(`Error in fetchData: ${res.status} ${res.statusText}`);
+   }
 
-    if (query) url.search = query.toString();
+   const data = await res.json();
+   const fieldValue = query?.get('_fields');
 
-    const res = await fetchWithRetry(url);
-
-    if (!res.ok) {
-      console.error('Response object:', res);
-      throw new Error(`Error in fetchData: ${res.status} ${res.statusText}`);
-    }
-
-    const data = await res.json();
-    const fieldValue = query?.get('_fields');
-
-    if (
-      (endpoint.includes('pages') || endpoint.includes('posts')) &&
-      (!fieldValue || fieldValue.includes('image'))
-    ) {
-      const dataWithImages = await addImagesToPost(data);
-      return dataWithImages as any;
-    } else {
-      return Array.isArray(data) ? data : [data];
-    }
-  } catch (error) {
+   if (
+     (endpoint.includes('pages') || endpoint.includes('posts')) &&
+     (!fieldValue || fieldValue.includes('image'))
+   ) {
+     const dataWithImages = await addImagesToPost(data);
+     return dataWithImages as any;
+   } else {
+     return Array.isArray(data) ? data : [data];
+   }
+ } catch (error) {
    console.error('Error in fetchData:', error, 'URL:', url.toString());
    throw error;
-  }
+ }
 }
 
 // #### POSTS ####
@@ -512,6 +514,7 @@ async function fetchWithRetry(
     }
   }
 }
+
 
 
 
