@@ -73,7 +73,7 @@ export async function fetchData<T>(
   query?: URLSearchParams
 ): Promise<T[]> {
   try {
-    const url = new URL(`https://cbgranollers.cat${WP_API}/${endpoint}`);
+    const url = new URL(`${BASE_URL}${WP_API}/${endpoint}`);
 
     if (query) url.search = query.toString();
 
@@ -101,8 +101,6 @@ export async function fetchData<T>(
     throw error; // Propagate the error to the caller
   }
 }
-
-
 
 // #### POSTS ####
 
@@ -345,22 +343,34 @@ function getBaseUrl(url: string): string {
   // Remove dimension, file extension and trailing '.' (e.g., "-150x150.png") from URL
   return url.replace(/-\d+x\d+(\.\w+)?$/, '').replace(/\.\w+$/, '');
 }
+
+let imageFetchPromise: Promise<any[] | null> | null = null;
+
+
+
 export async function fetchAllImages() {
   try {
-    // Assumes the maximum number of images per page is 100, you might need to handle pagination if there are more images.
-    const images = await fetchData<Media>(
+    if (imageFetchPromise) {
+      // If a fetch is already in progress, return the existing promise
+      return await imageFetchPromise;
+    }
+
+    // Store the new fetch promise in the cache
+    imageFetchPromise = fetchData<Media>(
       `${'media'}`,
       queryBuilder({ per_page: 100 } as { per_page: number })
-    );
+    ).then((images) => {
+      return images.map((image) => ({
+        id: image.id,
+        url: image.source_url,
+        title: image.title.rendered,
+        alt: image.alt_text,
+        caption: removeParagraphTags(image.caption.rendered),
+      }));
+    });
 
-    const imageDetails = images.map((image) => ({
-      id: image.id,
-      url: image.source_url,
-      title: image.title.rendered,
-      alt: image.alt_text,
-      caption: removeParagraphTags(image.caption.rendered),
-    }));
-
+    // Wait for the fetch to complete, then return the data
+    const imageDetails = await imageFetchPromise;
     return imageDetails;
   } catch (error) {
     console.error('Error in fetchAllImages:', error);
@@ -368,47 +378,40 @@ export async function fetchAllImages() {
   }
 }
 
+
 export async function fetchImagesInPageBySlug(slug: string) {
   try {
     const page = await fetchPageBySlug(slug);
     if (page.length === 0) throw new Error('Page not found');
-    const { id ,content } = page[0];
+    const { id, content } = page[0];
     const imageUrls = extractImageUrlsFromContent(content.rendered);
-    // Fetch all media
-    const allMedia = await fetchAllImages();
-    // Filter media to keep only the ones present in the page content
-    const filteredImages = allMedia.filter((media) => {
-      const isIncluded =
-        imageUrls.includes(media.url) ||
-        imageUrls.includes(media.url);
-      return isIncluded;
-    });
-
-    if (filteredImages.length === 0) { 
-       const images = await getImagesLink(id);
-       return images;
+    const imageUrlSet = new Set(imageUrls);
+    const images = await getImagesLink(id);
+    let filteredImages;
+    if (imageUrls.length === images.length) {
+      filteredImages = images.filter((image) => imageUrlSet.has(image.url));
+      return sortImagesByAppearanceOrder(filteredImages, imageUrls);
     }
-    // Create a mapping of base image URLs to their index in the order they appear
-    const imageUrlOrderMapping: { [url: string]: number } = {};
-    imageUrls.forEach((url, index) => {
-      const baseUrl = getBaseUrl(url);
-      imageUrlOrderMapping[baseUrl] = index;
-    });
+    //IF IMAGES DON'T SHARE SAME PARENT PAGE
+    const allMedia = await fetchAllImages();
+    
+    if (allMedia) {
+      filteredImages = allMedia.filter((media) => imageUrlSet.has(media.url));
+    } else {
+      filteredImages = [];
+    }
 
-    // Sort the images based on their order in the gallery
-    filteredImages.sort(
-      (a, b) =>
-        imageUrlOrderMapping[getBaseUrl(a.url)] -
-        imageUrlOrderMapping[getBaseUrl(b.url)]
-    );
-  
-    return filteredImages;
+    if (filteredImages.length === 0) {
+      const images = await getImagesLink(id);
+      return images;
+    }
+
+    return sortImagesByAppearanceOrder(filteredImages, imageUrls);
   } catch (error) {
     console.error('Error in fetchImagesInPageBySlug:', error);
     throw error;
   }
 }
-
 
 function extractImageUrlsFromContent(content: string): string[] {
   const urls: string[] = [];
@@ -420,6 +423,26 @@ function extractImageUrlsFromContent(content: string): string[] {
   }
 
   return urls;
+}
+
+
+function sortImagesByAppearanceOrder(
+  images: any[],
+  imageUrls: string[]
+): any[] {
+  const imageUrlOrderMapping: { [url: string]: number } = {};
+  imageUrls.forEach((url, index) => {
+    const baseUrl = getBaseUrl(url);
+    imageUrlOrderMapping[baseUrl] = index;
+  });
+
+  images.sort(
+    (a, b) =>
+      imageUrlOrderMapping[getBaseUrl(a.url)] -
+      imageUrlOrderMapping[getBaseUrl(b.url)]
+  );
+
+  return images;
 }
 
 async function fetchImageByURL(url: string): Promise<ExtendedMedia | null> {
@@ -454,6 +477,19 @@ async function fetchImageByUrl(url: string) {
     throw error;
   }
 }
+
+
+
+fetchImagesInPageBySlug('equips');
+fetchImagesInPageBySlug('jugadors-equip-senior-masculi');
+fetchImagesInPageBySlug('jugadors-equip-senior-masculi');
+
+
+
+
+
+
+
 
 
 
