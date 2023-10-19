@@ -415,8 +415,8 @@ export async function fetchImagesInPageBySlug(slug: string) {
     let filteredImages;
     if (imageUrls.length === images.length) {
       if (images.length === 1) return images;
-      filteredImages = images.filter((image) => imageUrlSet.has(image.url));
-      return sortImagesByAppearanceOrder(filteredImages, imageUrls);
+     
+      return sortImagesByAppearanceOrder(images, imageUrls);
     }
 
     // If images don't share the same parent page
@@ -468,3 +468,4 @@ function sortImagesByAppearanceOrder(
 
   return images;
 }
+
