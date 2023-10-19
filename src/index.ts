@@ -445,44 +445,9 @@ function sortImagesByAppearanceOrder(
   return images;
 }
 
-async function fetchImageByURL(url: string): Promise<ExtendedMedia | null> {
-  try {
-    const images = await fetchData<ExtendedMedia>(
-      'media',
-      new URLSearchParams({ url })
-    );
-    if (images.length > 0) {
-      return images[0];
-    }
-    return null;
-  } catch (error) {
-    console.error('Error in fetchImageByURL:', error);
-    return null;
-  }
-}
-
-async function fetchImageByUrl(url: string) {
-  try {
-    // Assuming BASE_URL and WP_API are defined and set to the correct values
-    const endpoint = 'media-by-url'; // Use the route you defined for your custom endpoint
-    const query = new URLSearchParams({ url }); // Construct the query parameters
-
-    // Use your fetchData function to make the request
-    const image = await fetchData(endpoint, query);
-
-    // Since fetchData returns an array, take the first element of the array as the result
-    return image[0];
-  } catch (error) {
-    console.error('Error in fetchImageByUrl:', error);
-    throw error;
-  }
-}
 
 
 
-fetchImagesInPageBySlug('equips');
-fetchImagesInPageBySlug('jugadors-equip-senior-masculi');
-fetchImagesInPageBySlug('jugadors-equip-senior-masculi');
 
 
 
