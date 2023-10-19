@@ -72,12 +72,12 @@ export async function fetchData<T>(
     | CustomEndpoint,
   query?: URLSearchParams
 ): Promise<T[]> {
+  const url = new URL(`https://cbgranollers.cat${WP_API}/${endpoint}`);
   try {
-    const url = new URL(`https://cbgranollers.cat${WP_API}/${endpoint}`);
 
     if (query) url.search = query.toString();
 
-    const res = await fetch(url);
+    const res = await fetchWithRetry(url);
 
     if (!res.ok) {
       console.error('Response object:', res);
@@ -97,8 +97,8 @@ export async function fetchData<T>(
       return Array.isArray(data) ? data : [data];
     }
   } catch (error) {
-    console.error('Error in fetchData:', error);
-    throw error; // Propagate the error to the caller
+   console.error('Error in fetchData:', error, 'URL:', url.toString());
+   throw error;
   }
 }
 
@@ -411,11 +411,11 @@ export async function fetchImagesInPageBySlug(slug: string) {
       getImagesLink(id),
       fetchAllImages(),
     ]);
-  
+
     let filteredImages;
     if (imageUrls.length === images.length) {
       if (images.length === 1) return images;
-     
+
       return sortImagesByAppearanceOrder(images, imageUrls);
     }
 
@@ -425,11 +425,10 @@ export async function fetchImagesInPageBySlug(slug: string) {
     } else {
       filteredImages = [];
     }
- 
+
     if (filteredImages.length === 0) {
       return images;
     }
-
 
     return sortImagesByAppearanceOrder(filteredImages, imageUrls);
   } catch (error) {
@@ -468,4 +467,51 @@ function sortImagesByAppearanceOrder(
 
   return images;
 }
+
+class FetchError extends Error {
+  status: number;
+  url: string;
+
+  constructor(message: string, status: number, url: string) {
+    super(message);
+    this.status = status;
+    this.url = url;
+  }
+}
+
+const timeout = (ms: number): Promise<never> => {
+  return new Promise((_, reject) =>
+    setTimeout(() => reject(new Error('Request timed out')), ms)
+  );
+};
+
+async function fetchWithRetry(
+  url: URL,
+  retries: number = 3,
+  delay: number = 500
+): Promise<any> {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const res = await Promise.race([fetch(url.toString()), timeout(5000)]);
+      if (!res.ok) {
+        throw new FetchError(
+          `Error in fetch: ${res.status} ${res.statusText}`,
+          res.status,
+          url.toString()
+        );
+      }
+      return await res.json();
+    } catch (error) {
+      console.error(
+        `Attempt ${i + 1} failed. Retrying in ${delay * (i + 1)}ms...`,
+        error
+      );
+      if (i < retries - 1)
+        await new Promise((res) => setTimeout(res, delay * (i + 1)));
+      else throw error;
+    }
+  }
+}
+
+
 

@@ -193,7 +193,7 @@ export async function getImagesLink(id: number) {
 
     return imageDetails;
   } catch (error) {
-    console.error('Error in getArrOfImagesFromPage:', error);
+    console.error('Error in getImagesLink:', error);
     throw error; // Propagate the error to the caller
   }
 }
