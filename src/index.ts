@@ -73,7 +73,7 @@ export async function fetchData<T>(
   query?: URLSearchParams
 ): Promise<T[]> {
   try {
-    const url = new URL(`${BASE_URL}${WP_API}/${endpoint}`);
+    const url = new URL(`https://cbgranollers.cat${WP_API}/${endpoint}`);
 
     if (query) url.search = query.toString();
 
@@ -444,6 +444,7 @@ function sortImagesByAppearanceOrder(
 
   return images;
 }
+
 
 
 
