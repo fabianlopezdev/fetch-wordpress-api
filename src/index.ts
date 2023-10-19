@@ -411,9 +411,10 @@ export async function fetchImagesInPageBySlug(slug: string) {
       getImagesLink(id),
       fetchAllImages(),
     ]);
-
+  
     let filteredImages;
     if (imageUrls.length === images.length) {
+      console.log('here')
       filteredImages = images.filter((image) => imageUrlSet.has(image.url));
       return sortImagesByAppearanceOrder(filteredImages, imageUrls);
     }
@@ -424,7 +425,7 @@ export async function fetchImagesInPageBySlug(slug: string) {
     } else {
       filteredImages = [];
     }
-    console.log('filteredImages', filteredImages);
+ 
     if (filteredImages.length === 0) {
       return images;
     }
@@ -451,6 +452,7 @@ function sortImagesByAppearanceOrder(
   images: any[],
   imageUrls: string[]
 ): any[] {
+  if (images.length === 1) return images;
   const imageUrlOrderMapping: { [url: string]: number } = {};
   imageUrls.forEach((url, index) => {
     const baseUrl = getBaseUrl(url);
@@ -465,6 +467,3 @@ function sortImagesByAppearanceOrder(
 
   return images;
 }
-
-fetchImagesInPageBySlug('jugadors-equip-senior-masculi');
-
