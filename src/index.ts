@@ -347,28 +347,19 @@ function getBaseUrl(url: string): string {
 let imageFetchPromise: Promise<any[] | null> | null = null;
 
 function extractUrl(caption: string, description: string) {
-  // Check if the caption contains "http"
-  if (/http/.test(caption)) {
-    return removeParagraphTags(caption);
-  } else {
-    // Look for an href attribute within a blockquote in the description
-    const match = description.match(
-      /<blockquote[^>]*>.*?href=["'](http[^"']+)["']/
-    );
-    if (match) {
-      // Extract the URL from the match
-      const url = match[1];
-      // Extract the homepage URL by finding the third slash
-      const homepage = url.slice(
-        0,
-        url.indexOf('/', url.indexOf('//') + 2) + 1
-      );
-      return homepage;
-    }
-  }
-  return ''; // Return an empty string if no URL is found
-}
+  const match = description.match(
+    /<blockquote[^>]*>.*?href=["'](http[^"']+)["']/
+  );
 
+  if (match) {
+    // Extract the URL from the match
+    const url = match[1];
+    // Extract the homepage URL by finding the third slash
+    const homepage = url.slice(0, url.indexOf('/', url.indexOf('//') + 2) + 1);
+    return homepage;
+  }
+  return removeParagraphTags(caption);
+}
 
 export async function fetchAllImages() {
   try {
@@ -385,13 +376,17 @@ export async function fetchAllImages() {
       return images.map((image) => {
         if (image.id === 9073) {
         }
-        return ({
-        id: image.id,
-        url: image.source_url,
-        title: image.title.rendered,
-        alt: image.alt_text,
-        caption: extractUrl(image.caption.rendered, image.description.rendered),
-      })});
+        return {
+          id: image.id,
+          url: image.source_url,
+          title: image.title.rendered,
+          alt: image.alt_text,
+          caption: extractUrl(
+            image.caption.rendered,
+            image.description.rendered
+          ),
+        };
+      });
     });
 
     // Wait for the fetch to complete, then return the data
@@ -402,7 +397,6 @@ export async function fetchAllImages() {
     throw error;
   }
 }
-
 
 export async function fetchImagesInPageBySlug(slug: string) {
   try {
@@ -430,7 +424,7 @@ export async function fetchImagesInPageBySlug(slug: string) {
     } else {
       filteredImages = [];
     }
-
+    console.log('filteredImages', filteredImages);
     if (filteredImages.length === 0) {
       return images;
     }
@@ -440,7 +434,6 @@ export async function fetchImagesInPageBySlug(slug: string) {
     throw error;
   }
 }
-
 
 function extractImageUrlsFromContent(content: string): string[] {
   const urls: string[] = [];
@@ -453,7 +446,6 @@ function extractImageUrlsFromContent(content: string): string[] {
 
   return urls;
 }
-
 
 function sortImagesByAppearanceOrder(
   images: any[],
@@ -474,13 +466,5 @@ function sortImagesByAppearanceOrder(
   return images;
 }
 
-
-
-
-
-
-
-
-
-
+fetchImagesInPageBySlug('jugadors-equip-senior-masculi');
 
