@@ -70,39 +70,58 @@ export async function fetchData<T>(
     | PagesWithId
     | MediaWithId
     | CustomEndpoint,
-  query?: URLSearchParams
+  query?: URLSearchParams,
+  isImage?: boolean // add isImage parameter to control the image fetching logic
 ): Promise<T[]> {
- const url = new URL(`https://cbgranollers.cat${WP_API}/${endpoint}`);
- try {
-   if (query) url.search = query.toString();
-   const res = await fetchWithRetry(url);
-   if (!res.ok) {
-     console.error(
-       'Error in fetchData:',
-       `Response not OK. Status: ${res.status}, StatusText: ${res.statusText}`,
-       'URL:',
-       url.toString()
-     );
-     throw new Error(`Error in fetchData: ${res.status} ${res.statusText}`);
-   }
+  const url = new URL(`https://cbgranollers.cat${WP_API}/${endpoint}`);
+  try {
+    let fieldValue: string | null = null;
+    if (query) {
+      fieldValue = query.get('_fields');
+      if (fieldValue && fieldValue.includes('image')) {
+        // Split the _fields string into an array
+        const fieldsArray = fieldValue.split(',');
+        // Filter out 'image'
+        const updatedFieldsArray = fieldsArray.filter(
+          (field) => field !== 'image'
+        );
+        // Join the array back into a string
+        const updatedFieldValue = updatedFieldsArray.join(',');
+        query.set('_fields', updatedFieldValue);
+        // set isImage flag to true
+        isImage = true;
+      }
+      url.search = query.toString();
+    }
 
-   const data = await res.json();
-   const fieldValue = query?.get('_fields');
+    const res = await fetchWithRetry(url);
+    if (!res.ok) {
+      console.error(
+        'Error in fetchData:',
+        `Response not OK. Status: ${res.status}, StatusText: ${res.statusText}`,
+        'URL:',
+        url.toString()
+      );
+      throw new Error(`Error in fetchData: ${res.status} ${res.statusText}`);
+    }
 
-   if (
-     (endpoint.includes('pages') || endpoint.includes('posts')) &&
-     (!fieldValue || fieldValue.includes('image'))
-   ) {
-     const dataWithImages = await addImagesToPost(data);
-     return dataWithImages as any;
-   } else {
-     return Array.isArray(data) ? data : [data];
-   }
- } catch (error) {
-   console.error('Error in fetchData:', error, 'URL:', url.toString());
-   throw error;
- }
+    const data = await res.json();
+
+    if (
+      (isImage || fieldValue === null || fieldValue.includes('page')) && // modified condition
+      (endpoint.includes('pages') || endpoint.includes('posts'))
+    ) {
+      const dataWithImages = await addImagesToPost(data);
+      return dataWithImages as any;
+    } else {
+      return Array.isArray(data) ? data : [data];
+    }
+  } catch (error) {
+    console.error('Error in fetchData:', error, 'URL:', url.toString());
+    throw error;
+  }
 }
+
 
 // #### POSTS ####
 
@@ -175,7 +194,6 @@ export async function fetchPostsInCategory(
 
     const data = await fetchData<Post>('posts', queryBuilder(endpointParams));
     const posts = await detectRedirects(data);
-
     return posts;
   } catch (error) {
     console.error('Error in fetchPostsInCategory:', error);
@@ -563,9 +581,9 @@ async function fetchWithRetry(
 }
 
 
-configure({ BASE_URL: 'https://cbgranollers.cat' });
 
-fetchImagesInPageBySlug('equips')
+
+
 
 
 

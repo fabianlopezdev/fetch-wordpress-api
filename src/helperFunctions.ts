@@ -15,14 +15,30 @@ export function endpointParamsBuilder(
 
   if (Array.isArray(fields) && fields.length > 0) {
     const uniqueFields = [...new Set(fields)];
+
+    // Check if 'link' is already included, if not, add it
+    if (!uniqueFields.includes('link')) {
+      uniqueFields.push('link');
+    }
+
+    // Check if 'image' is included, if so, ensure 'featured_media' is also included
+    if (
+      uniqueFields.includes('image') &&
+      !uniqueFields.includes('featured_media')
+    ) {
+      uniqueFields.push('featured_media');
+    }
+
     endpointParams._fields = uniqueFields.join(',');
   }
+
   if (typeof quantity === 'number') {
     endpointParams.per_page = quantity;
   }
 
   return endpointParams;
 }
+
 
 /**
  * Constructs a URLSearchParams object from the provided endpoint parameters.
@@ -205,5 +221,7 @@ export function removeParagraphTags(string: string) {
   // Trim spaces at the beginning and end
   return cleanedString.trim();
 }
+
+
 
 
