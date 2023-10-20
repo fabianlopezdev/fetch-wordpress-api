@@ -106,6 +106,10 @@ export async function fetchData<T>(
 
 // #### POSTS ####
 
+interface PostsQueryCache {
+  [key: string]: Post[];
+}
+let postsQueryCache: PostsQueryCache = {};
 /**
  * Fetches a specified number of posts with optional fields.
  * @param {number} [quantity] - The number of posts to fetch.
@@ -118,9 +122,15 @@ export async function fetchPosts(
   postFields?: PostFields[]
 ): Promise<Post[]> {
   try {
+    // Create a cache key from the function parameters
+    const cacheKey = JSON.stringify({ quantity, postFields });
+    // Check the cache for a previous result
+    if (postsQueryCache[cacheKey]) {
+      return postsQueryCache[cacheKey];
+    }
     if (typeof postFields === 'undefined' && !quantity) {
       const allPosts = await fetchData<Post>('posts');
-
+      postsQueryCache[cacheKey] = allPosts;
       return allPosts;
     } else if (typeof postFields !== 'undefined' && quantity === -1) {
       const endpointParams = endpointParamsBuilder(postFields);
@@ -128,7 +138,7 @@ export async function fetchPosts(
       const data = await fetchData<Post>('posts', queryBuilder(endpointParams));
 
       const allPostsWithCustomFields = await detectRedirects(data);
-
+      postsQueryCache[cacheKey] = allPostsWithCustomFields;
       return allPostsWithCustomFields;
     }
 
@@ -136,6 +146,7 @@ export async function fetchPosts(
 
     const data = await fetchData<Post>('posts', queryBuilder(endpointParams));
     const posts = await detectRedirects(data);
+    postsQueryCache[cacheKey] = posts;
 
     return posts;
   } catch (error) {
@@ -363,21 +374,44 @@ function extractUrl(caption: string, description: string) {
   return removeParagraphTags(caption);
 }
 
+interface TransformedResultCache {
+  allImages?:{id: number, url: string,title: string, alt: string, caption: string} [];  // Replace YourImageType with the type of your images
+}
+let transformedResultCache: TransformedResultCache = {};  // Initialize cache as an object
+
 export async function fetchAllImages() {
   try {
+    // Check the cache first
+    if (transformedResultCache['allImages']) {
+      return transformedResultCache['allImages'];
+    }
+
     if (imageFetchPromise) {
       // If a fetch is already in progress, return the existing promise
       return await imageFetchPromise;
     }
 
+    // Specify the fields to fetch and the number of pages
+    const fields = [
+      'id',
+      'source_url',
+      'title',
+      'alt_text',
+      'caption',
+      'description',
+    ];
+    const quantity = 100; // Number of pages
+
+    // Build the endpoint parameters using the updated endpointParamsBuilder
+    const endpointParams = endpointParamsBuilder(fields, quantity);
+
     // Store the new fetch promise in the cache
     imageFetchPromise = fetchData<Media>(
       `${'media'}`,
-      queryBuilder({ per_page: 100 } as { per_page: number })
+      queryBuilder(endpointParams)
     ).then((images) => {
-      return images.map((image) => {
-        if (image.id === 9073) {
-        }
+      // Transform the result
+      const transformedResult = images.map((image) => {
         return {
           id: image.id,
           url: image.source_url,
@@ -389,6 +423,10 @@ export async function fetchAllImages() {
           ),
         };
       });
+
+      // Cache the transformed result for future use
+      transformedResultCache['allImages'] = transformedResult;
+      return transformedResult;
     });
 
     // Wait for the fetch to complete, then return the data
@@ -402,7 +440,7 @@ export async function fetchAllImages() {
 
 export async function fetchImagesInPageBySlug(slug: string) {
   try {
-    const page = await fetchPageBySlug(slug);
+    const page = await fetchPageBySlug(slug, ['id', 'content']);
     if (page.length === 0) throw new Error('Page not found');
     const { id, content } = page[0];
     const imageUrls = extractImageUrlsFromContent(content.rendered);
@@ -490,30 +528,56 @@ const timeout = (ms: number): Promise<never> => {
 async function fetchWithRetry(
   url: URL,
   retries: number = 3,
-  delay: number = 500
-): Promise<any> {
+  delay: number = 1000
+): Promise<Response> {
+  let lastError;
   for (let i = 0; i < retries; i++) {
     try {
-      const res = await Promise.race([fetch(url.toString()), timeout(5000)]);
+      const res = await fetch(url.toString());
       if (!res.ok) {
+        // Log status and headers if there's an error
+        console.error('Response Status:', res.status);
+        console.error('Response Headers:', JSON.stringify([...res.headers]));
+
+        // Log response body if there's an error
+        const responseBody = await res.text();
+        console.error('Response Body:', responseBody);
+
         throw new FetchError(
           `Error in fetch: ${res.status} ${res.statusText}`,
           res.status,
           url.toString()
         );
       }
-      return await res.json();
+      return res;
     } catch (error) {
       console.error(
-        `Attempt ${i + 1} failed. Retrying in ${delay * (i + 1)}ms...`,
+        `Attempt ${i + 1} failed. Retrying in ${delay}ms...`,
         error
       );
-      if (i < retries - 1)
-        await new Promise((res) => setTimeout(res, delay * (i + 1)));
-      else throw error;
+      lastError = error;
+      if (i < retries - 1) await new Promise((res) => setTimeout(res, delay));
     }
   }
+  throw lastError; // Ensure that an error is thrown if all retries fail
 }
+
+
+configure({ BASE_URL: 'https://cbgranollers.cat' });
+
+fetchImagesInPageBySlug('equips')
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
